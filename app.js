@@ -46,11 +46,10 @@
 
   // 밑줄 잉크 색 (저장 데이터를 읽을 때 쓰므로 load()보다 먼저)
   var DYES = [
-    // name: 고르면 뜨는 이름, src: 도구함 칸에 쓰인 재료 이름
-    { id: 'red',    name: '빨간색 염료', src: '양귀비', key: '1', ink: '#d8453a', hi: '#ff7a6a' },
-    { id: 'yellow', name: '노란색 염료', src: '민들레', key: '2', ink: '#e8b820', hi: '#ffe070' },
-    { id: 'green',  name: '녹색 염료',   src: '선인장', key: '3', ink: '#3f9a3a', hi: '#7ad06a' },
-    { id: 'blue',   name: '파란색 염료', src: '청금석', key: '4', ink: '#2f6ad0', hi: '#6aa0ff' }
+    { id: 'red',    name: '빨간색 염료', key: '1', ink: '#d8453a', hi: '#ff7a6a' },
+    { id: 'yellow', name: '노란색 염료', key: '2', ink: '#e8b820', hi: '#ffe070' },
+    { id: 'green',  name: '녹색 염료',   key: '3', ink: '#3f9a3a', hi: '#7ad06a' },
+    { id: 'blue',   name: '파란색 염료', key: '4', ink: '#2f6ad0', hi: '#6aa0ff' }
   ];
   var DYE_IDS = DYES.map(function (d) { return d.id; });
 
@@ -897,7 +896,7 @@
   }
 
   function toolName(t) { return t === 'pen' ? '깃펜' : t === 'erase' ? '지우개' : dyeOf(t).name; }
-  function slotName(t) { return t === 'pen' || t === 'erase' ? toolName(t) : dyeOf(t).src; }
+  function slotName(t) { return toolName(t); }
 
   // 도트 아이콘 (직접 그린 것)
   var ICON_QUILL = ['........ww', '.......wwk', '......wwgk', '.....wwgk.', '....wyyk..', '...wyyk...', '...wwk....', '..bbk.....', '.bbk......', 'bk........'];
@@ -930,7 +929,7 @@
     box.textContent = '';
     var list = [{ t: 'pen', key: 'Q' }].concat(DYES.map(function (d) { return { t: d.id, key: d.key }; }), [{ t: 'erase', key: '0' }]);
     list.forEach(function (it) {
-      var tip = it.t === 'pen' || it.t === 'erase' ? toolName(it.t) : slotName(it.t) + ' → ' + toolName(it.t);
+      var tip = toolName(it.t);
       var b = el('button', { type: 'button', class: 'slot', 'data-tool': it.t, 'aria-pressed': 'false', 'aria-label': tip, title: tip + ' (Alt+' + it.key + ')' }, [
         toolIcon(it.t, 'slot-icon'),
         el('span', { class: 'slot-name', text: slotName(it.t) }),
