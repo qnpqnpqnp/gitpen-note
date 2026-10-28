@@ -61,13 +61,20 @@
       });
     });
 
+    // 날짜별 글자 수: 기기마다 센 걸 더하면 겹치니 큰 쪽을 씀
+    var days = {};
+    [local.days || {}, remote.days || {}].forEach(function (d) {
+      Object.keys(d).forEach(function (k) { days[k] = Math.max(days[k] || 0, Number(d[k]) || 0); });
+    });
+
     return {
       books: books,
       deleted: deleted,
       xp: Number(lv.xp) || 0,
       level: Number(lv.level) || 1,
       totalChars: Math.max(Number(local.totalChars) || 0, Number(remote.totalChars) || 0),
-      achievements: achv
+      achievements: achv,
+      days: days
     };
   }
 

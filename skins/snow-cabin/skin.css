@@ -1,0 +1,60 @@
+/* 눈 오는 오두막 — 하얀 벽, 파란 표지, 차가운 종이
+   텍스처 png는 이 폴더 것, 폰트는 기본 스킨 것을 같이 씀 */
+
+@font-face { font-family: 'SkinFont'; src: url('../default/Galmuri11.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'SkinFont'; src: url('../default/Galmuri11-Bold.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+
+:root {
+  --font: 'SkinFont', monospace;
+  --bg: #e4e8f0;
+  --bar: #22304a;
+  --bar-line: #3a4c6c;
+  --outline: #0e1626;
+  --text: #ffffff;
+  --text-soft: #d4def0;
+  --text-shadow: #0e1626;
+  --on-wall: #1a2840;
+  --on-wall-shadow: #ffffff;
+  --paper: #f8fafd;
+  --paper-old: #eaeff6;
+  --paper-hi: #ffffff;
+  --paper-sh: #c8d4e4;
+  --ink: #14203a;
+  --ink-soft: #4a5a76;
+  --ink-accent: #2a5a9a;
+  --card: #ffffff;
+  --card-locked: #dce4ee;
+  --warn: #a01c2c;
+  --link: #1e4e9a;
+  --cover: #346096;
+  --cover-hi: #5a8ac4;
+  --cover-sh: #1c3a60;
+  --shelf-back: #1a2436;
+  --plank: #8a6446;
+  --ribbon: #c83a4a;
+  --ribbon-hi: #f06a78;
+  --btn: #5a6a84;
+  --btn-hi: #8a9ab4;
+  --btn-sh: #2e3a4e;
+  --gold: #9ac4ec;
+  --gold-hi: #d0e8ff;
+  --gold-sh: #4a7aa8;
+  --gold-text: #0e1e34;
+  --go: #3a7a6a;
+  --go-hi: #6aaa9a;
+  --go-sh: #1e4a40;
+  --gauge-on: #3a7ac4;
+  --gauge-on-hi: #7ab0ea;
+  --gauge-off: #c8d4e4;
+  --gauge-off-hi: #dae4f0;
+  --gauge-over: #c83a4a;
+  --gauge-over-hi: #f06a78;
+  --xp: #3a7ac4;
+  --xp-hi: #7ab0ea;
+}
+
+.tx-wall  { background-image: url('wall.png');  background-size: 64px 64px; }
+.tx-plank { background-image: url('plank.png'); background-size: 64px 32px; }
+.tx-paper { background-image: url('paper.png'); background-size: 64px 64px; }
+.tx-cover { background-image: url('cover.png'); background-size: 64px 64px; }
+.tx-grain { background-image: url('grain.png'); background-size: 32px 32px; }

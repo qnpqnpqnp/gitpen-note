@@ -62,8 +62,8 @@ kbd {
 }
 .field::placeholder { color: #9a9aa4; }
 .field.small { height: 40px; width: auto; font-size: 13px; padding: 0 8px; }
-.field.light { width: 100%; color: var(--ink); background-color: #fffaf0; border-color: var(--ink); box-shadow: inset 4px 4px 0 var(--paper-sh); }
-.field.light::placeholder { color: #8a7660; }
+.field.light { width: 100%; color: var(--ink); background-color: var(--card, #fffaf0); border-color: var(--ink); box-shadow: inset 4px 4px 0 var(--paper-sh); }
+.field.light::placeholder { color: var(--ink-soft); }
 
 /* ── 설정 메뉴 ── */
 .menu { position: relative; }
@@ -85,7 +85,7 @@ kbd {
   background-color: var(--plank); border: 4px solid var(--outline);
   font-size: 22px; font-weight: 700; text-shadow: 2px 2px 0 #3a220f;
 }
-.lead { margin: 0; font-size: 14px; line-height: 1.6; color: var(--text-soft); text-shadow: 2px 2px 0 var(--text-shadow); }
+.lead { margin: 0; font-size: 14px; line-height: 1.6; color: var(--on-wall, var(--text-soft)); text-shadow: 2px 2px 0 var(--on-wall-shadow, var(--text-shadow)); }
 .shelf { border: 4px solid var(--outline); }
 .shelf-row {
   display: flex; align-items: flex-end; gap: 8px;
@@ -240,7 +240,7 @@ kbd {
 }
 .swatch input:checked + span { outline: 4px solid var(--gold); outline-offset: 2px; }
 .swatch input:focus-visible + span { outline: 4px solid var(--gold-hi); outline-offset: 2px; }
-.warn { margin: 0; font-size: 13px; line-height: 1.6; color: #8a1f1f; }
+.warn { margin: 0; font-size: 13px; line-height: 1.6; color: var(--warn, #8a1f1f); }
 .dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
 
 /* ── 알림 ── */
@@ -314,14 +314,14 @@ kbd {
 .achv-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; max-height: 60vh; overflow-y: auto; }
 .achv-item {
   display: flex; align-items: center; gap: 12px; padding: 10px 12px;
-  background-color: #fffaf0; border: 4px solid var(--outline);
+  background-color: var(--card, #fffaf0); border: 4px solid var(--outline);
   box-shadow: inset -4px -4px 0 var(--paper-sh);
 }
-.achv-item.locked { background-color: #d9cdb0; }
+.achv-item.locked { background-color: var(--card-locked, #d9cdb0); }
 .achv-item.locked .achv-icon { filter: grayscale(1) brightness(0.55); }
 .achv-item b { display: block; font-size: 14px; color: var(--ink); margin-bottom: 4px; }
 .achv-item span { font-size: 12px; color: var(--ink-soft); }
-.achv-item.locked b { color: #4a3c2c; }
+.achv-item.locked b { color: var(--ink-soft); }
 .achv-date { margin-left: auto; font-size: 11px; color: var(--ink-soft); white-space: nowrap; }
 
 /* ── 책 펼치는 연출 ── */
@@ -372,8 +372,8 @@ kbd {
 .sync-help, .sync-note { margin: 0; font-size: 13px; line-height: 1.7; color: var(--ink); }
 .sync-note { font-size: 12px; color: var(--ink-soft); }
 .sync-steps { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; line-height: 1.6; color: var(--ink); }
-.sync-steps a { color: #2f5a9a; text-decoration: underline; }
-.sync-steps a:hover { color: #1c3a6a; }
+.sync-steps a { color: var(--link, #2f5a9a); text-decoration: underline; }
+.sync-steps a:hover { color: var(--ink); }
 .dialog-actions { flex-wrap: wrap; }
 
 /* ── 아이패드: 홈 화면 앱으로 열었을 때 노치·홈바 피하기 ── */

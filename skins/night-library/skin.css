@@ -1,0 +1,60 @@
+/* 밤 도서관 — 남색 벽, 촛불 금색, 눈 편한 어두운 종이
+   텍스처 png는 이 폴더 것, 폰트는 기본 스킨 것을 같이 씀 */
+
+@font-face { font-family: 'SkinFont'; src: url('../default/Galmuri11.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'SkinFont'; src: url('../default/Galmuri11-Bold.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+
+:root {
+  --font: 'SkinFont', monospace;
+  --bg: #1e2238;
+  --bar: #11131f;
+  --bar-line: #2a2f4a;
+  --outline: #000000;
+  --text: #ffffff;
+  --text-soft: #d6d2e6;
+  --text-shadow: #000000;
+  --on-wall: #e8e2f4;
+  --on-wall-shadow: #000000;
+  --paper: #2e3248;
+  --paper-old: #272a3e;
+  --paper-hi: #3c4160;
+  --paper-sh: #1c1f30;
+  --ink: #ece4cc;
+  --ink-soft: #aeacc4;
+  --ink-accent: #f0c46a;
+  --card: #383c58;
+  --card-locked: #24273a;
+  --warn: #ff9a8a;
+  --link: #9cc0ff;
+  --cover: #262a5c;
+  --cover-hi: #3c4290;
+  --cover-sh: #14163a;
+  --shelf-back: #0b0c16;
+  --plank: #4a3428;
+  --ribbon: #d8a93a;
+  --ribbon-hi: #f5d27a;
+  --btn: #4a4e6a;
+  --btn-hi: #7478a0;
+  --btn-sh: #262840;
+  --gold: #e0b04a;
+  --gold-hi: #f8dc8c;
+  --gold-sh: #8a6516;
+  --gold-text: #241808;
+  --go: #3f6a8a;
+  --go-hi: #6f9cc0;
+  --go-sh: #22384a;
+  --gauge-on: #e0b04a;
+  --gauge-on-hi: #f8dc8c;
+  --gauge-off: #30344c;
+  --gauge-off-hi: #3e4260;
+  --gauge-over: #c84a4a;
+  --gauge-over-hi: #f07070;
+  --xp: #8a7ae0;
+  --xp-hi: #b8acff;
+}
+
+.tx-wall  { background-image: url('wall.png');  background-size: 64px 64px; }
+.tx-plank { background-image: url('plank.png'); background-size: 64px 32px; }
+.tx-paper { background-image: url('paper.png'); background-size: 64px 64px; }
+.tx-cover { background-image: url('cover.png'); background-size: 64px 64px; }
+.tx-grain { background-image: url('grain.png'); background-size: 32px 32px; }

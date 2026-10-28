@@ -30,7 +30,17 @@
     { id: 'level_10',    title: '필경사',       desc: '레벨 10에 도달했다' },
     { id: 'night_owl',   title: '올빼미',       desc: '자정부터 새벽 4시 사이에 필기했다' },
     { id: 'chars_10000', title: '만 자',        desc: '모두 합쳐 10,000자를 썼다' },
-    { id: 'pages_100',   title: '완결',         desc: '한 책을 ' + MAX_PAGES + '쪽까지 채웠다' }
+    { id: 'pages_100',   title: '완결',         desc: '한 책을 ' + MAX_PAGES + '쪽까지 채웠다' },
+    { id: 'streak_3',    title: '불씨',         desc: '3일 연속으로 필기했다' },
+    { id: 'streak_7',    title: '모닥불',       desc: '7일 연속으로 필기했다' },
+    { id: 'streak_30',   title: '꺼지지 않는 불', desc: '30일 연속으로 필기했다' },
+    { id: 'early_bird',  title: '아침형 인간',  desc: '새벽 5시부터 아침 7시 사이에 필기했다' },
+    { id: 'cram',        title: '벼락치기',     desc: '하루에 2,000자를 썼다' },
+    { id: 'read_through',title: '다 읽었다',    desc: '서명한 책을 처음부터 끝까지 넘겨봤다' },
+    { id: 'librarian',   title: '도서관장',     desc: '서명한 책 10권을 모았다' },
+    { id: 'speed',       title: '속필',         desc: '1분 안에 200자를 직접 쳤다', hidden: true },
+    { id: 'silent',      title: '침묵의 필경사', desc: '소리를 끈 채로 한 쪽을 꽉 채웠다', hidden: true },
+    { id: 'explorer',    title: '탐험가',       desc: '모든 스킨을 한 번씩 입어봤다', hidden: true }
   ];
 
   // ───────── 상태 ─────────
@@ -38,7 +48,7 @@
   var current = { bookId: null, page: 0 };
 
   function emptyState() {
-    return { books: [], limitOn: true, skin: SKINS[0], sound: true, pen: true, xp: 0, level: 1, totalChars: 0, achievements: {}, deleted: {} };
+    return { books: [], limitOn: true, skin: SKINS[0], sound: true, pen: true, xp: 0, level: 1, totalChars: 0, achievements: {}, deleted: {}, days: {}, skinsUsed: {} };
   }
 
   function load() {
@@ -110,8 +120,32 @@
       xp: Math.max(0, Number(obj.xp) || 0),
       level: Math.max(1, Number(obj.level) || 1),
       totalChars: Math.max(0, Number(obj.totalChars) || 0),
-      achievements: achv
+      achievements: achv,
+      days: cleanDays(obj.days),
+      skinsUsed: (obj.skinsUsed && typeof obj.skinsUsed === 'object') ? obj.skinsUsed : {}
     };
+  }
+
+  // 날짜별로 쓴 글자 수 { '2026-10-28': 812 } — 연속 기록, 벼락치기 계산용
+  function cleanDays(d) {
+    var out = {};
+    if (d && typeof d === 'object') Object.keys(d).forEach(function (k) {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(k) && Number(d[k]) > 0) out[k] = Number(d[k]);
+    });
+    return out;
+  }
+
+  function dayKey(t) {
+    var d = t ? new Date(t) : new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
+  // 오늘(또는 어제)까지 며칠 연속으로 썼는지
+  function streak() {
+    var n = 0, t = Date.now();
+    if (!state.days[dayKey(t)]) t -= 86400000; // 오늘 아직 안 썼으면 어제부터 셈
+    while (state.days[dayKey(t)]) { n++; t -= 86400000; }
+    return n;
   }
 
   function newId() {
@@ -361,19 +395,54 @@
         pixelIcon(ICON_STAR, PAL_STAR, 'achv-icon'),
         el('div', null, [el('b', { text: '업적 달성!' }), el('span', { text: a.title })])
       ]);
-      $('achv-area').appendChild(pop);
+      var area = $('achv-area');
+      area.appendChild(pop);
+      while (area.children.length > 3) area.removeChild(area.firstChild); // 한꺼번에 많이 풀려도 3개까지만
       setTimeout(function () { pop.remove(); }, REDUCED ? 2500 : 2900);
     }, 250);
+  }
+
+  var recentGains = [];
+  function trackGain(gained) {
+    // 한 번에 30자 넘게 들어온 건 붙여넣기로 보고 속필에서 뺌
+    var now = Date.now();
+    if (gained <= 30) recentGains.push([now, gained]);
+    recentGains = recentGains.filter(function (g) { return now - g[0] < 60000; });
+    var sum = recentGains.reduce(function (a, g) { return a + g[1]; }, 0);
+    if (sum >= 200) unlock('speed');
+
+    var k = dayKey(now);
+    state.days[k] = (state.days[k] || 0) + gained;
+    if (state.days[k] >= 2000) unlock('cram');
+    var st = streak();
+    if (st >= 3) unlock('streak_3');
+    if (st >= 7) unlock('streak_7');
+    if (st >= 30) unlock('streak_30');
   }
 
   function checkWritingAchievements(b) {
     var n = charLen(b.pages[current.page]);
     if (n > 0) unlock('first_ink');
     if (n >= LIMIT) unlock('full_page');
+    if (n >= LIMIT && !state.sound) unlock('silent');
     if (state.totalChars >= 1000) unlock('chars_1000');
     if (state.totalChars >= 10000) unlock('chars_10000');
     var h = new Date().getHours();
     if (n > 0 && h >= 0 && h < 4) unlock('night_owl');
+    if (n > 0 && h >= 5 && h < 7) unlock('early_bird');
+  }
+
+  function checkSignedAchievements() {
+    var signed = state.books.filter(function (b) { return b.signed; }).length;
+    if (signed >= 10) unlock('librarian');
+  }
+
+  // 서명한 책을 펼친 뒤 모든 쪽을 넘겨봤는지
+  function markSeen(b) {
+    if (!b || !b.signed || b.pages.length < 2) return;
+    current.seen = current.seen || {};
+    current.seen[current.page] = true;
+    if (Object.keys(current.seen).length >= b.pages.length) unlock('read_through');
   }
 
   function checkBookAchievements(b) {
@@ -390,13 +459,15 @@
     ACHIEVEMENTS.forEach(function (a) {
       var t = state.achievements[a.id];
       if (t) got++;
+      var desc = (!t && a.hidden) ? '숨겨진 업적 · 조건은 비밀' : a.desc;
       list.appendChild(el('li', { class: 'achv-item' + (t ? '' : ' locked') }, [
         pixelIcon(ICON_STAR, PAL_STAR, 'achv-icon'),
-        el('div', null, [el('b', { text: t ? a.title : '???' }), el('span', { text: a.desc })]),
+        el('div', null, [el('b', { text: t ? a.title : '???' }), el('span', { text: desc })]),
         t ? el('span', { class: 'achv-date', text: fmtDate(t) }) : null
       ]));
     });
-    $('achv-progress').textContent = got + ' / ' + ACHIEVEMENTS.length;
+    var st = streak();
+    $('achv-progress').textContent = got + ' / ' + ACHIEVEMENTS.length + (st ? ' · ' + st + '일 연속 필기 중' : '');
     $('achv-dialog').showModal();
   }
 
@@ -405,12 +476,14 @@
     if (SKINS.indexOf(name) < 0) name = SKINS[0];
     $('skin-css').setAttribute('href', 'skins/' + encodeURIComponent(name) + '/skin.css');
     state.skin = name;
+    state.skinsUsed[name] = true;
   }
 
   function fillSkinSelect() {
     var sel = $('skin-select');
     sel.textContent = '';
-    SKINS.forEach(function (name) { sel.appendChild(el('option', { value: name, text: name })); });
+    var NAMES = { 'default': '기본 (나무 서재)', 'night-library': '밤 도서관', 'sakura': '벚꽃', 'stone-cave': '돌 동굴', 'snow-cabin': '눈 오는 오두막' };
+    SKINS.forEach(function (name) { sel.appendChild(el('option', { value: name, text: NAMES[name] || name })); });
     sel.value = state.skin;
   }
 
@@ -575,6 +648,8 @@
     current.bookId = id;
     current.page = typeof page === 'number' ? page : b.lastPage;
     current.page = Math.min(Math.max(0, current.page), b.pages.length - 1);
+    current.seen = {};
+    markSeen(b);
     $('shelf-view').hidden = true;
     $('book-view').hidden = false;
     $('stamp').classList.remove('pop');
@@ -668,6 +743,7 @@
       b.best[i] = n;
       state.totalChars += gained;
       gainXp(gained);
+      trackGain(gained);
     }
     checkWritingAchievements(b);
     save();
@@ -693,6 +769,7 @@
     if (next < 0 || next >= b.pages.length) return;
     current.page = next;
     b.lastPage = next;
+    markSeen(b);
     save();
     sfx.page();
     renderBook();
@@ -757,6 +834,7 @@
     setTimeout(function () {
       gainXp(XP_SIGN, stamp);
       unlock('first_sign');
+      checkSignedAchievements();
       save();
     }, 420);
     save();
@@ -827,7 +905,12 @@
     if (state.pen) sfx.pen();
   });
   $('search').addEventListener('input', renderShelf);
-  $('skin-select').addEventListener('change', function () { applySkin(this.value); save(); });
+  $('skin-select').addEventListener('change', function () {
+    applySkin(this.value);
+    sfx.tap();
+    if (SKINS.length > 1 && SKINS.every(function (n) { return state.skinsUsed[n]; })) unlock('explorer');
+    save();
+  });
   document.querySelectorAll('[data-close]').forEach(function (btn) {
     btn.addEventListener('click', function () { btn.closest('dialog').close(); });
   });
@@ -912,6 +995,7 @@
     state.level = clean.level;
     state.totalChars = clean.totalChars;
     state.achievements = clean.achievements;
+    state.days = clean.days;
     save(true);
     if (JSON.stringify(state.books) === before) { renderXp(); return; }
 
@@ -937,7 +1021,7 @@
       return {
         books: state.books, deleted: state.deleted,
         xp: state.xp, level: state.level, totalChars: state.totalChars,
-        achievements: state.achievements
+        achievements: state.achievements, days: state.days
       };
     },
     applySynced: applySynced,
