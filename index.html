@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1b120c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="깃펜노트">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon-192.png">
+<title>깃펜노트</title>
+<link id="skin-css" rel="stylesheet" href="skins/default/skin.css">
+<link rel="stylesheet" href="style.css">
+<script src="config.js"></script>
+</head>
+<body class="tx-wall">
+
+<!-- ───────── 책장 ───────── -->
+<section id="shelf-view" class="view">
+  <header class="bar">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 11 11" aria-hidden="true">
+        <rect x="8" y="0" width="3" height="1" fill="#ffffff"/><rect x="7" y="1" width="4" height="1" fill="#ffffff"/>
+        <rect x="6" y="2" width="4" height="1" fill="#d8d8e0"/><rect x="5" y="3" width="4" height="1" fill="#f5d27a"/>
+        <rect x="4" y="4" width="4" height="1" fill="#d8a93a"/><rect x="3" y="5" width="4" height="1" fill="#ffffff"/>
+        <rect x="3" y="6" width="3" height="1" fill="#d8d8e0"/><rect x="2" y="7" width="2" height="1" fill="#8a5a2b"/>
+        <rect x="1" y="8" width="2" height="1" fill="#8a5a2b"/><rect x="0" y="9" width="2" height="1" fill="#5a3a1c"/>
+      </svg>
+      <span class="brand-name">깃펜노트</span>
+    </div>
+    <label class="sr" for="search">책 찾기</label>
+    <input id="search" class="field" type="search" placeholder="책 찾기  [/]" autocomplete="off">
+    <button class="btn press btn-mute" type="button" aria-pressed="false" aria-label="소리 끄기 (M)"></button>
+    <button id="btn-new-book" class="btn gold press" type="button">+ 새 책 <span class="key-hint">N</span></button>
+    <details class="menu">
+      <summary class="btn press" aria-label="설정">설정</summary>
+      <div class="menu-panel">
+        <label class="menu-row" for="skin-select">스킨
+          <select id="skin-select" class="field small"></select>
+        </label>
+        <button id="btn-pen" class="btn press wide" type="button" aria-pressed="true">펜 사각 소리 켜짐</button>
+        <button id="btn-achv" class="btn gold press wide" type="button">업적 보기</button>
+        <button id="btn-sync" class="btn press wide" type="button">기기 동기화</button>
+        <button id="btn-export" class="btn press wide" type="button">백업 파일로 저장</button>
+        <button id="btn-import" class="btn press wide" type="button">백업 불러오기</button>
+        <input id="import-file" type="file" accept="application/json,.json" hidden>
+        <p class="menu-note">필기는 이 브라우저에만 저장돼. 가끔 백업해둬.</p>
+      </div>
+    </details>
+  </header>
+
+  <main class="wrap">
+    <section class="block">
+      <div class="block-head">
+        <h1 class="sign tx-plank">과목 책장</h1>
+        <p class="lead">책 한 권 = 과목 하나 · 서명한 책은 금딱지가 붙고 잠겨</p>
+      </div>
+      <div class="shelf">
+        <div id="shelf-row" class="shelf-row"></div>
+        <div class="plank tx-plank"></div>
+      </div>
+      <p id="shelf-empty" class="lead" hidden>아직 책이 없어. [N]을 눌러서 첫 책을 만들어봐.</p>
+    </section>
+
+    <section class="block" id="recent-block">
+      <h2 class="sign tx-plank">최근 펼친 쪽</h2>
+      <div id="recent-list" class="recent-list"></div>
+    </section>
+  </main>
+
+  <footer class="bar keys">
+    <span><kbd>N</kbd>새 책</span>
+    <span><kbd>/</kbd>검색</span>
+    <span><kbd>← →</kbd>책 고르기</span>
+    <span><kbd>Enter</kbd>펼치기</span>
+    <span><kbd>M</kbd>소리</span>
+    <div class="sync-slot" role="status"></div>
+    <div class="xp-slot"></div>
+  </footer>
+</section>
+
+<!-- ───────── 필기 ───────── -->
+<section id="book-view" class="view" hidden>
+  <header class="bar">
+    <button id="btn-back" class="btn press" type="button">← 책장 <span class="key-hint soft">Esc</span></button>
+    <div class="title-wrap">
+      <div class="sign tx-plank title-sign">
+        <span id="book-title" class="book-title"></span>
+        <span id="book-meta" class="book-meta"></span>
+      </div>
+    </div>
+    <button class="btn press btn-mute" type="button" aria-pressed="false" aria-label="소리 끄기 (M)"></button>
+    <button id="btn-limit" class="btn press" type="button" aria-pressed="true">글자 제한
+      <span class="switch" aria-hidden="true"><span></span><span></span></span>
+    </button>
+    <button id="btn-sign" class="btn gold press" type="button">서명하기</button>
+    <span id="signed-badge" class="badge" hidden>서명됨</span>
+    <button id="btn-delete" class="btn press danger" type="button" aria-label="이 책 버리기">버리기</button>
+  </header>
+
+  <main class="wrap book-wrap">
+    <div class="book tx-cover">
+      <div class="ribbon" aria-hidden="true"></div>
+      <div id="stamp" class="stamp" aria-hidden="true">서명</div>
+
+      <div class="page old tx-paper">
+        <div class="page-head"><span id="left-no"></span><span>읽기 전용</span></div>
+        <div id="left-text" class="page-text"></div>
+      </div>
+
+      <div class="gutter" aria-hidden="true"></div>
+
+      <div class="page tx-paper">
+        <div class="page-head"><span id="right-no"></span><span id="right-state">쓰는 중</span></div>
+        <label class="sr" for="editor">필기</label>
+        <textarea id="editor" class="page-text editor" spellcheck="false"></textarea>
+        <div class="gauge-row">
+          <div id="gauge" class="gauge" aria-hidden="true"></div>
+          <span id="count" class="count"></span>
+        </div>
+      </div>
+    </div>
+
+    <nav class="pager" aria-label="쪽 넘기기">
+      <button id="btn-prev" class="btn press" type="button">← 이전</button>
+      <span id="page-pos" class="page-pos"></span>
+      <button id="btn-next" class="btn press" type="button">다음 →</button>
+      <button id="btn-add-page" class="btn go press" type="button">+ 새 쪽</button>
+    </nav>
+  </main>
+
+  <footer class="bar keys">
+    <span><kbd>Alt ← →</kbd>쪽 넘기기</span>
+    <span><kbd>Ctrl Enter</kbd>새 쪽</span>
+    <span><kbd>Ctrl S</kbd>서명</span>
+    <span><kbd>Esc</kbd> · <kbd>Alt ↑</kbd>책장으로</span>
+    <span><kbd>Alt M</kbd>소리</span>
+    <div class="sync-slot" role="status"></div>
+    <div class="xp-slot"></div>
+  </footer>
+</section>
+
+<!-- ───────── 새 책 ───────── -->
+<dialog id="new-dialog" class="dialog tx-paper">
+  <form id="new-form" method="dialog">
+    <h2 class="dialog-title">새 책 만들기</h2>
+    <label class="dialog-label" for="new-title">책 이름 (과목)</label>
+    <input id="new-title" class="field light" maxlength="16" required autocomplete="off" placeholder="예: 운영체제">
+    <fieldset class="colors">
+      <legend class="dialog-label">표지 색</legend>
+      <div id="color-list" class="color-list"></div>
+    </fieldset>
+    <div class="dialog-actions">
+      <button class="btn press" type="button" data-close>취소</button>
+      <button class="btn gold press" type="submit">만들기</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ───────── 서명 ───────── -->
+<dialog id="sign-dialog" class="dialog tx-paper">
+  <form id="sign-form" method="dialog">
+    <h2 class="dialog-title">책에 서명하기</h2>
+    <label class="dialog-label" for="sign-title">책 제목</label>
+    <input id="sign-title" class="field light" maxlength="16" required autocomplete="off">
+    <p class="warn">서명하면 이 책은 더 이상 고칠 수 없어. 읽기만 가능해.</p>
+    <div class="dialog-actions">
+      <button class="btn press" type="button" data-close>취소</button>
+      <button class="btn gold press" type="submit">서명하고 잠그기</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ───────── 업적 ───────── -->
+<dialog id="achv-dialog" class="dialog tx-paper achv-dialog">
+  <div class="achv-dialog-inner">
+    <h2 class="dialog-title">업적 <span id="achv-progress" class="achv-progress"></span></h2>
+    <ul id="achv-list" class="achv-list"></ul>
+    <div class="dialog-actions">
+      <button class="btn press" type="button" data-close>닫기</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- ───────── 동기화 ───────── -->
+<dialog id="sync-dialog" class="dialog tx-paper sync-dialog">
+  <form id="sync-form" method="dialog">
+    <h2 class="dialog-title">기기 동기화</h2>
+    <p id="sync-state-text" class="sync-state-text"></p>
+
+    <div id="sync-setup">
+      <p class="sync-help">노트북과 아이패드의 필기를 네 GitHub 계정의 <b>비공개 Gist</b>에 맞춰 둬. 처음 한 번만, 기기마다 아래를 하면 돼.</p>
+      <ol class="sync-steps">
+        <li><a href="https://github.com/settings/tokens/new?scopes=gist&amp;description=gitpen-note" target="_blank" rel="noopener">GitHub 토큰 만들기 페이지</a>를 연다. (GitHub 로그인 필요)</li>
+        <li>권한은 <b>gist</b> 하나만 체크된 상태 그대로 두고, 맨 아래 <b>Generate token</b>을 누른다.</li>
+        <li>나온 토큰(ghp_로 시작)을 복사해서 아래 칸에 붙여넣는다.</li>
+      </ol>
+      <label class="dialog-label" for="sync-token">GitHub 토큰</label>
+      <input id="sync-token" class="field light" type="password" autocomplete="off" spellcheck="false" placeholder="ghp_...">
+      <p class="sync-note">토큰은 이 기기에만 저장되고, 백업 파일에도 안 들어가. 남이 쓰는 기기에는 넣지 마.</p>
+    </div>
+
+    <div class="dialog-actions">
+      <button id="sync-disconnect" class="btn press" type="button" hidden>연결 끊기</button>
+      <button class="btn press" type="button" data-close>닫기</button>
+      <button id="sync-now" class="btn go press" type="button" hidden>지금 동기화</button>
+      <button id="sync-connect" class="btn gold press" type="submit">연결하기</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="achv-area" class="achv-area" aria-live="polite"></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script src="app.js"></script>
+<script src="sync.js"></script>
+<script>
+  // 인터넷 주소로 열었을 때만 오프라인 지원 켜기 (노트북에서 파일로 열 때는 안 씀)
+  if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+/* ───────────────────────────────────────────────
+   기본 스킨 (default)
+   새 스킨을 만들려면 이 폴더를 통째로 복사해서 이름을 바꾸고,
+   아래 색상 값과 이미지·폰트 파일만 갈아끼우면 돼.
+   이미지 경로는 이 파일 기준이야.
+   ─────────────────────────────────────────────── */
+
+@font-face { font-family: 'SkinFont'; src: url('Galmuri11.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'SkinFont'; src: url('Galmuri11-Bold.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+
+:root {
+  --font: 'SkinFont', monospace;
+
+  /* 바탕 */
+  --bg: #3a261a;
+  --bar: #1b120c;
+  --bar-line: #3b2a1f;
+  --outline: #000000;
+  --text: #ffffff;
+  --text-soft: #e0d4b8;
+  --text-shadow: #000000;
+
+  /* 종이 */
+  --paper: #eee1be;
+  --paper-old: #e2d3aa;
+  --paper-hi: #faf3de;
+  --paper-sh: #c8b48a;
+  --ink: #24180f;
+  --ink-soft: #5a4632;
+  --ink-accent: #6b3a14;
+
+  /* 표지, 선반 */
+  --cover: #5c281e;
+  --cover-hi: #8a4434;
+  --cover-sh: #3a1510;
+  --shelf-back: #140d08;
+  --plank: #805430;
+  --ribbon: #b83a3a;
+  --ribbon-hi: #e05a5a;
+
+  /* 일반 버튼 */
+  --btn: #6f6f78;
+  --btn-hi: #a3a3ad;
+  --btn-sh: #3a3a40;
+
+  /* 강조 버튼 (서명) */
+  --gold: #d8a93a;
+  --gold-hi: #f5d27a;
+  --gold-sh: #8a6516;
+  --gold-text: #2a1a08;
+
+  /* 초록 버튼 (새 쪽) */
+  --go: #3f7a34;
+  --go-hi: #6fb55e;
+  --go-sh: #24481e;
+
+  /* 게이지 */
+  --gauge-on: #3f7a34;
+  --gauge-on-hi: #6fb55e;
+  --gauge-off: #3a3a40;
+  --gauge-off-hi: #4a4a52;
+  --gauge-over: #b83a3a;
+  --gauge-over-hi: #e05a5a;
+}
+
+/* 텍스처: 파일만 바꾸면 화면 전체 질감이 바뀜 */
+.tx-wall  { background-image: url('wall.png');  background-size: 64px 64px; }
+.tx-plank { background-image: url('plank.png'); background-size: 64px 32px; }
+.tx-paper { background-image: url('paper.png'); background-size: 64px 64px; }
+.tx-cover { background-image: url('cover.png'); background-size: 64px 64px; }
+.tx-grain { background-image: url('grain.png'); background-size: 32px 32px; }
+
+/* 잉크 경험치 바 색 */
+:root {
+  --xp: #3f6fb5;
+  --xp-hi: #7fa8ea;
+}
