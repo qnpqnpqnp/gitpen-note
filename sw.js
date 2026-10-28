@@ -1,7 +1,7 @@
 // 깃펜노트 오프라인 지원
 // 앱 파일을 기기에 담아두고, 인터넷이 없어도 열리게 함.
 // 앱을 고친 뒤 올릴 때는 VERSION 숫자를 하나 올려야 새 파일로 바뀜.
-var VERSION = 'gitpen-v8';
+var VERSION = 'gitpen-v9';
 var SHELL = [
   './',
   'index.html',

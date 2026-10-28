@@ -429,3 +429,25 @@ mark.dye-blue   { background-image: linear-gradient(transparent 58%, rgba(47, 10
 @media (max-width: 640px) {
   .toolbox { grid-template-columns: repeat(3, 80px); right: auto; left: 0; }
 }
+
+/* ═════════ 큰 화면: 책이 창 크기에 맞춰 커짐 ═════════ */
+.book-wrap { max-width: min(1560px, 96vw); }
+.page {
+  padding: clamp(26px, 2.2vw, 46px) clamp(30px, 2.6vw, 54px) clamp(22px, 1.8vw, 36px);
+}
+.page-text { font-size: clamp(16px, calc(0.45vw + 10px), 21px); }
+.page-head { font-size: clamp(11px, calc(0.2vw + 8px), 14px); }
+.count { font-size: clamp(13px, calc(0.25vw + 9px), 16px); }
+.gauge span { height: clamp(12px, 0.8vw, 16px); }
+@media (max-width: 640px) {
+  .page { min-height: 360px; }
+}
+
+/* 필기 화면은 창 높이에 딱 맞춤: 위 막대 + (책이 남는 공간 전부) + 쪽 버튼 + 아래 막대 */
+@media (min-width: 641px) {
+  #book-view { height: 100vh; height: 100dvh; min-height: 560px; }
+  #book-view .book-wrap { flex: 1 1 auto; min-height: 0; padding-top: clamp(16px, 2.2vh, 34px); padding-bottom: clamp(12px, 1.8vh, 26px); gap: clamp(12px, 1.8vh, 24px); }
+  #book-view .book { flex: 1 1 auto; min-height: 0; flex-wrap: nowrap; align-items: stretch; }
+  #book-view .page { flex: 1 1 0; min-width: 0; min-height: 0; }
+  #book-view .pager { flex-shrink: 0; }
+}
