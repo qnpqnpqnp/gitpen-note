@@ -901,17 +901,7 @@
 
   // 도트 아이콘 (직접 그린 것)
   var ICON_QUILL = ['........ww', '.......wwk', '......wwgk', '.....wwgk.', '....wyyk..', '...wyyk...', '...wwk....', '..bbk.....', '.bbk......', 'bk........'];
-  // 염료 재료 아이콘 (직접 그림): 양귀비, 민들레, 선인장, 청금석
-  var ICON_DYE = {
-    red:    { rows: ['..........', '..kk..kk..', '.kRRkkRRk.', '.kRrRRrRk.', '.kRRddRRk.', '..kRddRk..', '...kRRk...', '....gk....', '...gg.g...', '....g.....'],
-              pal: { k: '#5a1010', R: '#d8453a', r: '#ff7a6a', d: '#2a1a1a', g: '#3f9a3a' } },
-    yellow: { rows: ['..y..y..y.', '...yYYYy..', '.yYYYwYYy.', '..YYoooYY.', '.yYYoooYYy', '..YYYYYYy.', '.y.yYYy.y.', '.....g....', '...g.g.g..', '....ggg...'],
-              pal: { y: '#c89a10', Y: '#f2c830', w: '#fff0a0', o: '#e89a20', g: '#3f9a3a' } },
-    green:  { rows: ['....kk....', '...kGgk...', '.k.kGgk...', 'kGkkGgk.k.', 'kGGGGgkkGk', '.kkkGgGGk.', '...kGgkk..', '...kGgk...', '..bbbbbb..', '..bBBBBb..'],
-              pal: { k: '#1e4a1a', G: '#4a9a3a', g: '#7ad06a', b: '#5a3a1c', B: '#8a5a2b' } },
-    blue:   { rows: ['..........', '...kkkk...', '..kLHHLk..', '.kLHwHLLk.', '.kLHHLLLk.', '.kLLLLLDk.', '..kLLLDk..', '...kLDk...', '....kk....', '..........'],
-              pal: { k: '#0e1e4a', L: '#2f6ad0', H: '#6aa0ff', w: '#e0ecff', D: '#1c3a80' } }
-  };
+  var ICON_BOTTLE = ['...kkkk...', '...kccK...', '....kk....', '...kwwk...', '..kwLLLk..', '.kLLLLLLk.', '.kLhLLLLk.', '.kLhLLLLk.', '.kLLLLLDk.', '..kkkkkk..'];
   var ICON_ERASER = ['..........', '..........', '....kkkkkk', '...kwwwwpk', '..kwwwwppk', '.kkkkkkppk', '.kppppkpk.', '.kppppkk..', '.kkkkkk...', '..........'];
   var ICON_BOX = ['...kkkk...', '...k..k...', 'kkkkkkkkkk', 'kbbbbbbbbk', 'kBBBmmBBBk', 'kbbbmmbbbk', 'kbbbbbbbbk', 'kBBBBBBBBk', 'kbbbbbbbbk', 'kkkkkkkkkk'];
 
@@ -919,8 +909,8 @@
     if (t === 'pen') return pixelIcon(ICON_QUILL, { k: '#000000', w: '#ffffff', g: '#c8c8d4', y: '#d8a93a', b: '#7a4e2c' }, cls);
     if (t === 'erase') return pixelIcon(ICON_ERASER, { k: '#000000', w: '#ffffff', p: '#e88aa0' }, cls);
     if (t === 'box') return pixelIcon(ICON_BOX, { k: '#000000', b: '#9a6a3a', B: '#7a4e2a', m: '#c8c8d4' }, cls);
-    var ic = ICON_DYE[t];
-    return pixelIcon(ic.rows, ic.pal, cls);
+    var d = dyeOf(t);
+    return pixelIcon(ICON_BOTTLE, { k: '#000000', c: '#b08050', K: '#000000', w: '#e8eef4', L: d.ink, h: d.hi, D: '#00000055' }, cls);
   }
 
   function setTool(t, silent) {
