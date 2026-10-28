@@ -58,3 +58,9 @@
 .tx-paper { background-image: url('paper.png'); background-size: 64px 64px; }
 .tx-cover { background-image: url('cover.png'); background-size: 64px 64px; }
 .tx-grain { background-image: url('grain.png'); background-size: 32px 32px; }
+
+/* 어두운 종이라 형광 칠 대신 굵은 밑줄만 */
+mark.dye-red    { background-image: linear-gradient(transparent 80%, #ff7a6a 80%); }
+mark.dye-yellow { background-image: linear-gradient(transparent 80%, #ffd84a 80%); }
+mark.dye-green  { background-image: linear-gradient(transparent 80%, #7ad06a 80%); }
+mark.dye-blue   { background-image: linear-gradient(transparent 80%, #6aa0ff 80%); }

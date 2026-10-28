@@ -40,10 +40,21 @@
     { id: 'librarian',   title: '도서관장',     desc: '서명한 책 10권을 모았다' },
     { id: 'speed',       title: '속필',         desc: '1분 안에 200자를 직접 쳤다', hidden: true },
     { id: 'silent',      title: '침묵의 필경사', desc: '소리를 끈 채로 한 쪽을 꽉 채웠다', hidden: true },
-    { id: 'explorer',    title: '탐험가',       desc: '모든 스킨을 한 번씩 입어봤다', hidden: true }
+    { id: 'explorer',    title: '탐험가',       desc: '모든 스킨을 한 번씩 입어봤다', hidden: true },
+    { id: 'first_mark',  title: '밑줄 쫙',      desc: '처음으로 잉크병으로 밑줄을 그었다' }
   ];
 
+  // 밑줄 잉크 색 (저장 데이터를 읽을 때 쓰므로 load()보다 먼저)
+  var DYES = [
+    { id: 'red',    name: '다홍',   key: '1', ink: '#d8453a', hi: '#ff7a6a' },
+    { id: 'yellow', name: '개나리', key: '2', ink: '#e8b820', hi: '#ffe070' },
+    { id: 'green',  name: '풀잎',   key: '3', ink: '#3f9a3a', hi: '#7ad06a' },
+    { id: 'blue',   name: '바다',   key: '4', ink: '#2f6ad0', hi: '#6aa0ff' }
+  ];
+  var DYE_IDS = DYES.map(function (d) { return d.id; });
+
   // ───────── 상태 ─────────
+  var loadFailed = false;
   var state = load();
   var current = { bookId: null, page: 0 };
 
@@ -55,13 +66,23 @@
     try {
       var raw = localStorage.getItem(STORE_KEY);
       if (!raw) return emptyState();
-      return sanitize(JSON.parse(raw)) || emptyState();
+      var data = sanitize(JSON.parse(raw));
+      if (data) return data;
+      throw new Error('저장 데이터 형식이 이상함');
     } catch (e) {
+      // 읽다가 실패해도 원본은 절대 덮어쓰지 않음: 따로 보관하고, 이번 실행에서는 저장을 막음
+      loadFailed = true;
+      try {
+        var r = localStorage.getItem(STORE_KEY);
+        if (r && !localStorage.getItem(STORE_KEY + '-rescue')) localStorage.setItem(STORE_KEY + '-rescue', r);
+      } catch (e2) { /* 보관도 안 되면 그냥 둠 */ }
+      if (window.console) console.error('깃펜노트: 저장된 필기를 읽지 못했어', e);
       return emptyState();
     }
   }
 
   function save(fromSync) {
+    if (loadFailed) { toast('저장된 필기를 읽지 못해서 저장을 멈췄어. 원본은 안전하게 보관돼 있어.'); return; }
     try {
       localStorage.setItem(STORE_KEY, JSON.stringify(state));
     } catch (e) {
@@ -89,6 +110,7 @@
         color: COLORS.indexOf(b.color) >= 0 ? b.color : COLORS[0],
         pages: pages,
         best: best,
+        marks: pages.map(function (p, i) { return cleanMarks(Array.isArray(b.marks) ? b.marks[i] : null, p.length); }),
         signed: !!b.signed,
         createdAt: Number(b.createdAt) || Date.now(),
         updatedAt: Number(b.updatedAt) || Date.now(),
@@ -124,6 +146,68 @@
       days: cleanDays(obj.days),
       skinsUsed: (obj.skinsUsed && typeof obj.skinsUsed === 'object') ? obj.skinsUsed : {}
     };
+  }
+
+  // ───────── 밑줄 (잉크병) ─────────
+  // 쪽마다 [{ s: 시작, e: 끝, c: 색 }] — 글자 위치(문자열 인덱스) 기준, 서로 겹치지 않게 유지
+  // (잉크 색 목록 DYES는 저장된 데이터를 읽기 전에 필요해서 파일 위쪽에 있음)
+
+  function cleanMarks(list, len) {
+    if (!Array.isArray(list)) return [];
+    return list.filter(function (m) {
+      return m && DYE_IDS.indexOf(m.c) >= 0 && Number.isFinite(m.s) && Number.isFinite(m.e);
+    }).map(function (m) {
+      return { s: Math.max(0, Math.min(len, m.s | 0)), e: Math.max(0, Math.min(len, m.e | 0)), c: m.c };
+    }).filter(function (m) { return m.e > m.s; }).sort(function (a, b) { return a.s - b.s; });
+  }
+
+  // [s, e) 구간을 비우고(겹친 밑줄은 잘라냄) 필요하면 새 밑줄을 넣음
+  function paintRange(list, s, e, color) {
+    var out = [];
+    list.forEach(function (m) {
+      if (m.e <= s || m.s >= e) { out.push(m); return; }
+      if (m.s < s) out.push({ s: m.s, e: s, c: m.c });
+      if (m.e > e) out.push({ s: e, e: m.e, c: m.c });
+    });
+    if (color) out.push({ s: s, e: e, c: color });
+    out.sort(function (a, b) { return a.s - b.s; });
+    // 같은 색이 붙어 있으면 하나로 합침
+    var merged = [];
+    out.forEach(function (m) {
+      var last = merged[merged.length - 1];
+      if (last && last.c === m.c && last.e >= m.s) last.e = Math.max(last.e, m.e);
+      else merged.push({ s: m.s, e: m.e, c: m.c });
+    });
+    return merged;
+  }
+
+  // 글을 고쳤을 때 밑줄 위치를 따라 옮김 (바뀐 구간 = 앞뒤 공통 부분을 뺀 가운데)
+  function shiftMarks(list, oldText, newText) {
+    if (!list || !list.length || oldText === newText) return list || [];
+    var p = 0, max = Math.min(oldText.length, newText.length);
+    while (p < max && oldText[p] === newText[p]) p++;
+    var sfx = 0;
+    while (sfx < max - p && oldText[oldText.length - 1 - sfx] === newText[newText.length - 1 - sfx]) sfx++;
+    var oldEnd = oldText.length - sfx, newEnd = newText.length - sfx, delta = newEnd - oldEnd;
+    function mapStart(x) { return x < p ? x : (x >= oldEnd ? x + delta : newEnd); }
+    function mapEnd(x) { return x <= p ? x : (x >= oldEnd ? x + delta : p); }
+    return list.map(function (m) { return { s: mapStart(m.s), e: mapEnd(m.e), c: m.c }; })
+      .filter(function (m) { return m.e > m.s; });
+  }
+
+  // 글 + 밑줄을 칸에 그림 (텍스트 노드와 <mark>로만 — HTML로 해석하지 않음)
+  function renderMarked(box, text, marks, mirror) {
+    box.textContent = '';
+    var at = 0;
+    (marks || []).forEach(function (m) {
+      if (m.s > at) box.appendChild(document.createTextNode(text.slice(at, m.s)));
+      var mk = document.createElement('mark');
+      mk.className = 'dye dye-' + m.c;
+      mk.textContent = text.slice(m.s, m.e);
+      box.appendChild(mk);
+      at = m.e;
+    });
+    box.appendChild(document.createTextNode(text.slice(at) + (mirror ? '\n ' : '')));
   }
 
   // 날짜별로 쓴 글자 수 { '2026-10-28': 812 } — 연속 기록, 벼락치기 계산용
@@ -316,6 +400,22 @@
     // 종이 구기기: 바스락 여러 번
     trash: function () {
       for (var i = 0; i < 6; i++) rustle({ at: i * rand(0.04, 0.07), dur: rand(0.05, 0.09), vol: rand(0.35, 0.6), f: rand(1500, 4000), q: 1.5, attack: 0.002, grain: 0.8 });
+    },
+    // 잉크병 붓질: 짧게 슥
+    dye: function () {
+      rustle({ dur: 0.16, vol: 0.35, f: 900, to: 2400, q: 0.6, attack: 0.02 });
+      body({ at: 0.02, f: 1400, to: 1100, dur: 0.05, vol: 0.03 });
+    },
+    // 지우개: 쓱쓱 두 번
+    rub: function () {
+      rustle({ dur: 0.09, vol: 0.35, f: 1500, q: 1.2, attack: 0.01, grain: 0.5 });
+      rustle({ at: 0.11, dur: 0.09, vol: 0.3, f: 1300, q: 1.2, attack: 0.01, grain: 0.5 });
+    },
+    // 도구함 열기: 나무 뚜껑 덜컥
+    box: function () {
+      body({ f: 260, to: 170, dur: 0.12, vol: 0.3, attack: 0.002 });
+      body({ at: 0.07, f: 520, to: 420, dur: 0.05, vol: 0.12, attack: 0.001 });
+      rustle({ dur: 0.08, vol: 0.18, type: 'lowpass', f: 900, attack: 0.002 });
     },
     // 나무 책상 톡 (글자 제한에 막힘, 책 고르기)
     tap: function () { body({ f: rand(700, 800), to: 400, dur: 0.05, vol: 0.12, attack: 0.001 }); },
@@ -517,6 +617,7 @@
   // ───────── 책장 화면 ─────────
   function showShelf() {
     current.bookId = null;
+    closeToolbox();
     $('book-view').hidden = true;
     $('shelf-view').hidden = false;
     document.title = '깃펜노트';
@@ -629,7 +730,7 @@
     var book = {
       id: newId(), title: title.slice(0, 16),
       color: picked ? picked.value : COLORS[0],
-      pages: [''], best: [0], signed: false, createdAt: now, updatedAt: now, lastPage: 0
+      pages: [''], best: [0], marks: [[]], signed: false, createdAt: now, updatedAt: now, lastPage: 0
     };
     state.books.push(book);
     save();
@@ -650,6 +751,7 @@
     current.page = Math.min(Math.max(0, current.page), b.pages.length - 1);
     current.seen = {};
     markSeen(b);
+    tool = 'pen';
     $('shelf-view').hidden = true;
     $('book-view').hidden = false;
     $('stamp').classList.remove('pop');
@@ -682,15 +784,16 @@
       left.classList.add('empty');
     } else {
       $('left-no').textContent = i + '쪽';
-      left.textContent = b.pages[i - 1] || '(빈 쪽)';
+      if (b.pages[i - 1]) renderMarked(left, b.pages[i - 1], b.marks[i - 1]);
+      else left.textContent = '(빈 쪽)';
       left.classList.toggle('empty', !b.pages[i - 1]);
     }
 
     var ed = $('editor');
     ed.value = b.pages[i];
-    ed.readOnly = b.signed;
     $('right-no').textContent = (i + 1) + '쪽';
-    $('right-state').textContent = b.signed ? '서명됨 · 읽기 전용' : '쓰는 중';
+    renderMirror();
+    renderTool();
     applyLimit();
     renderCount();
 
@@ -734,9 +837,11 @@
       var now = Date.now();
       if (now - penAt > 45) { penAt = now; sfx.pen(); }
     }
+    b.marks[i] = shiftMarks(b.marks[i], b.pages[i], this.value);
     b.pages[i] = this.value;
     b.updatedAt = Date.now();
     b.lastPage = i;
+    renderMirror();
     var n = charLen(this.value);
     var gained = Math.max(0, n - (b.best[i] || 0));
     if (gained) {
@@ -755,6 +860,156 @@
     if (!state.limitOn || this.readOnly) return;
     if (e.inputType && e.inputType.indexOf('insert') === 0 && charLen(this.value) >= LIMIT && this.selectionStart === this.selectionEnd) sfx.tap();
   });
+
+  // ───────── 도구함: 깃펜(쓰기) / 잉크병(밑줄) / 지우개 ─────────
+  var tool = 'pen';
+
+  function renderMirror() {
+    var b = findBook(current.bookId);
+    if (!b) return;
+    var mirror = $('ed-mirror');
+    renderMarked(mirror, $('editor').value, b.marks[current.page], true);
+    mirror.scrollTop = $('editor').scrollTop;
+  }
+
+  function dyeOf(id) { for (var i = 0; i < DYES.length; i++) if (DYES[i].id === id) return DYES[i]; return null; }
+
+  function renderTool() {
+    var b = findBook(current.bookId);
+    var ed = $('editor');
+    var writing = tool === 'pen';
+    ed.readOnly = !b || b.signed || !writing;
+    ed.classList.toggle('marking', !writing);
+    ed.setAttribute('data-tool', tool);
+    var label;
+    if (tool === 'pen') label = b && b.signed ? '서명됨 · 읽기 전용' : '쓰는 중';
+    else if (tool === 'erase') label = '지우개 · 밑줄을 드래그해서 지우기';
+    else label = dyeOf(tool).name + ' 잉크 · 글자를 드래그해서 밑줄';
+    $('right-state').textContent = label;
+    $('btn-tools').textContent = '';
+    $('btn-tools').appendChild(toolIcon(tool, 'tool-icon'));
+    $('btn-tools').appendChild(document.createTextNode('도구함'));
+    $('btn-tools').setAttribute('aria-label', '도구함 열기, 지금 도구: ' + toolName(tool));
+    document.querySelectorAll('.slot').forEach(function (sl) {
+      sl.setAttribute('aria-pressed', String(sl.getAttribute('data-tool') === tool));
+    });
+  }
+
+  function toolName(t) { return t === 'pen' ? '깃펜' : t === 'erase' ? '지우개' : dyeOf(t).name + ' 잉크병'; }
+
+  // 도트 아이콘 (직접 그린 것)
+  var ICON_QUILL = ['........ww', '.......wwk', '......wwgk', '.....wwgk.', '....wyyk..', '...wyyk...', '...wwk....', '..bbk.....', '.bbk......', 'bk........'];
+  var ICON_BOTTLE = ['...kkkk...', '...kccK...', '....kk....', '...kwwk...', '..kwLLLk..', '.kLLLLLLk.', '.kLhLLLLk.', '.kLhLLLLk.', '.kLLLLLDk.', '..kkkkkk..'];
+  var ICON_ERASER = ['..........', '..........', '....kkkkkk', '...kwwwwpk', '..kwwwwppk', '.kkkkkkppk', '.kppppkpk.', '.kppppkk..', '.kkkkkk...', '..........'];
+  var ICON_BOX = ['...kkkk...', '...k..k...', 'kkkkkkkkkk', 'kbbbbbbbbk', 'kBBBmmBBBk', 'kbbbmmbbbk', 'kbbbbbbbbk', 'kBBBBBBBBk', 'kbbbbbbbbk', 'kkkkkkkkkk'];
+
+  function toolIcon(t, cls) {
+    if (t === 'pen') return pixelIcon(ICON_QUILL, { k: '#000000', w: '#ffffff', g: '#c8c8d4', y: '#d8a93a', b: '#7a4e2c' }, cls);
+    if (t === 'erase') return pixelIcon(ICON_ERASER, { k: '#000000', w: '#ffffff', p: '#e88aa0' }, cls);
+    if (t === 'box') return pixelIcon(ICON_BOX, { k: '#000000', b: '#9a6a3a', B: '#7a4e2a', m: '#c8c8d4' }, cls);
+    var d = dyeOf(t);
+    return pixelIcon(ICON_BOTTLE, { k: '#000000', c: '#b08050', K: '#000000', w: '#e8eef4', L: d.ink, h: d.hi, D: '#00000055' }, cls);
+  }
+
+  function setTool(t, silent) {
+    if (t !== 'pen' && t !== 'erase' && !dyeOf(t)) return;
+    tool = t;
+    var ed = $('editor');
+    var pos = ed.selectionEnd;
+    ed.setSelectionRange(pos, pos);
+    renderTool();
+    if (!silent) sfx.tap();
+    closeToolbox();
+    ed.focus();
+  }
+
+  function buildToolbox() {
+    var box = $('toolbox');
+    box.textContent = '';
+    var list = [{ t: 'pen', key: 'Q' }].concat(DYES.map(function (d) { return { t: d.id, key: d.key }; }), [{ t: 'erase', key: '0' }]);
+    list.forEach(function (it) {
+      var b = el('button', { type: 'button', class: 'slot', 'data-tool': it.t, 'aria-pressed': 'false', title: toolName(it.t) + ' (Alt+' + it.key + ')' }, [
+        toolIcon(it.t, 'slot-icon'),
+        el('span', { class: 'slot-name', text: toolName(it.t).replace(' 잉크병', '') }),
+        el('span', { class: 'slot-key', text: it.key })
+      ]);
+      b.addEventListener('click', function () { setTool(it.t); });
+      box.appendChild(b);
+    });
+  }
+
+  function openToolbox() {
+    var box = $('toolbox');
+    if (!box.hidden) return closeToolbox();
+    box.hidden = false;
+    $('btn-tools').setAttribute('aria-expanded', 'true');
+    sfx.box();
+    var cur = box.querySelector('[aria-pressed="true"]') || box.querySelector('.slot');
+    if (cur) cur.focus();
+  }
+  function closeToolbox() {
+    $('toolbox').hidden = true;
+    $('btn-tools').setAttribute('aria-expanded', 'false');
+  }
+
+  // 잉크병·지우개일 때: 드래그로 고른 글자에 밑줄을 긋거나 지움
+  function applyTool() {
+    if (tool === 'pen') return;
+    var b = findBook(current.bookId);
+    if (!b) return;
+    var ed = $('editor'), s = ed.selectionStart, e = ed.selectionEnd, i = current.page;
+    if (s === e) {
+      // 그냥 눌렀을 때 지우개면 그 자리 밑줄 하나를 통째로 지움
+      if (tool !== 'erase') return;
+      var hit = (b.marks[i] || []).filter(function (m) { return m.s <= s && s < m.e; })[0];
+      if (!hit) return;
+      s = hit.s; e = hit.e;
+    }
+    var text = b.pages[i];
+    // 앞뒤 공백·줄바꿈은 밑줄에서 뺌
+    while (s < e && /\s/.test(text[s])) s++;
+    while (e > s && /\s/.test(text[e - 1])) e--;
+    if (s >= e) { ed.setSelectionRange(ed.selectionEnd, ed.selectionEnd); return; }
+    var before = JSON.stringify(b.marks[i]);
+    b.marks[i] = paintRange(b.marks[i] || [], s, e, tool === 'erase' ? null : tool);
+    ed.setSelectionRange(e, e);
+    if (JSON.stringify(b.marks[i]) === before) return;
+    b.updatedAt = Date.now();
+    if (tool === 'erase') sfx.rub(); else { sfx.dye(); unlock('first_mark'); }
+    save();
+    renderMirror();
+  }
+
+  ['pointerup', 'keyup'].forEach(function (ev) {
+    $('editor').addEventListener(ev, function (e) {
+      if (ev === 'keyup' && !e.shiftKey && e.key !== 'Shift') return; // 키보드는 Shift+방향키로 고른 뒤 손 뗄 때
+      setTimeout(applyTool, 0);
+    });
+  });
+  // 아이패드: 손가락으로 고른 뒤 선택이 멈추면 적용
+  var selTimer = null;
+  document.addEventListener('selectionchange', function () {
+    if (tool === 'pen' || document.activeElement !== $('editor')) return;
+    clearTimeout(selTimer);
+    selTimer = setTimeout(function () { if (window.matchMedia('(hover: none)').matches) applyTool(); }, 700);
+  });
+  $('editor').addEventListener('scroll', function () { $('ed-mirror').scrollTop = this.scrollTop; });
+
+  $('btn-tools').addEventListener('click', openToolbox);
+  document.addEventListener('click', function (e) {
+    if ($('toolbox').hidden) return;
+    if (e.target.closest('#toolbox') || e.target.closest('#btn-tools')) return;
+    closeToolbox();
+  });
+  $('toolbox').addEventListener('keydown', function (e) {
+    var slots = Array.prototype.slice.call(this.querySelectorAll('.slot'));
+    var idx = slots.indexOf(document.activeElement);
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      slots[(idx + (e.key === 'ArrowRight' ? 1 : slots.length - 1)) % slots.length].focus();
+    } else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeToolbox(); $('btn-tools').focus(); }
+  });
+  buildToolbox();
 
   function turnAnim() {
     if (REDUCED) return;
@@ -783,6 +1038,7 @@
     if (b.pages.length >= MAX_PAGES) { toast('이 책은 ' + MAX_PAGES + '쪽이 꽉 찼어. 새 책을 만들어줘.'); return; }
     b.pages.splice(current.page + 1, 0, '');
     b.best.splice(current.page + 1, 0, 0);
+    b.marks.splice(current.page + 1, 0, []);
     current.page += 1;
     b.lastPage = current.page;
     b.updatedAt = Date.now();
@@ -936,6 +1192,12 @@
       if (mod && e.key === 'Enter') { e.preventDefault(); addPage(); return; }
       if (e.altKey && e.key === 'ArrowLeft') { e.preventDefault(); goPage(-1); return; }
       if (e.altKey && e.key === 'ArrowRight') { e.preventDefault(); goPage(1); return; }
+      if (e.altKey && (e.code === 'KeyQ' || e.key === 'q' || e.key === 'ㅂ')) { e.preventDefault(); setTool('pen'); return; }
+      if (e.altKey && e.code === 'Digit0') { e.preventDefault(); setTool('erase'); return; }
+      if (e.altKey && /^Digit[1-4]$/.test(e.code)) { e.preventDefault(); setTool(DYES[Number(e.code.slice(5)) - 1].id); return; }
+      if (e.altKey && (e.code === 'KeyB' || e.key === 'ㅠ')) { e.preventDefault(); openToolbox(); return; }
+      if (e.key === 'Escape' && !$('toolbox').hidden) { e.preventDefault(); closeToolbox(); return; }
+      if (e.key === 'Escape' && tool !== 'pen') { e.preventDefault(); setTool('pen'); return; }
       if (e.key === 'Escape' || (e.altKey && e.key === 'ArrowUp')) { e.preventDefault(); showShelf(); return; }
       return;
     }

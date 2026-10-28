@@ -93,6 +93,10 @@
       </div>
     </div>
     <button class="btn press btn-mute" type="button" aria-pressed="false" aria-label="소리 끄기 (M)"></button>
+    <div class="tools-wrap">
+      <button id="btn-tools" class="btn press" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="toolbox">도구함</button>
+      <div id="toolbox" class="toolbox" role="group" aria-label="도구함" hidden></div>
+    </div>
     <button id="btn-limit" class="btn press" type="button" aria-pressed="true">글자 제한
       <span class="switch" aria-hidden="true"><span></span><span></span></span>
     </button>
@@ -116,7 +120,10 @@
       <div class="page tx-paper">
         <div class="page-head"><span id="right-no"></span><span id="right-state">쓰는 중</span></div>
         <label class="sr" for="editor">필기</label>
-        <textarea id="editor" class="page-text editor" spellcheck="false"></textarea>
+        <div class="ed-wrap">
+          <div id="ed-mirror" class="page-text mirror" aria-hidden="true"></div>
+          <textarea id="editor" class="page-text editor" spellcheck="false"></textarea>
+        </div>
         <div class="gauge-row">
           <div id="gauge" class="gauge" aria-hidden="true"></div>
           <span id="count" class="count"></span>
@@ -134,10 +141,11 @@
 
   <footer class="bar keys">
     <span><kbd>Alt ← →</kbd>쪽 넘기기</span>
-    <span><kbd>Ctrl Enter</kbd>새 쪽</span>
+    <span><kbd>Ctrl ↵</kbd>새 쪽</span>
     <span><kbd>Ctrl S</kbd>서명</span>
-    <span><kbd>Esc</kbd> · <kbd>Alt ↑</kbd>책장으로</span>
-    <span><kbd>Alt M</kbd>소리</span>
+    <span><kbd>Esc</kbd>책장</span>
+    <span><kbd>Alt B</kbd>도구함</span>
+    <span><kbd>Alt 1~4</kbd>밑줄</span>
     <div class="sync-slot" role="status"></div>
     <div class="xp-slot"></div>
   </footer>

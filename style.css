@@ -384,3 +384,48 @@ kbd {
 @media (hover: none) {
   .spine .tip { display: none !important; }
 }
+
+/* ═════════ 도구함과 밑줄 ═════════ */
+.tools-wrap { position: relative; }
+#btn-tools { gap: 8px; }
+.tool-icon { width: 24px; height: 24px; shape-rendering: crispEdges; }
+.toolbox {
+  position: absolute; z-index: 30; top: calc(100% + 10px); right: 0;
+  display: grid; grid-template-columns: repeat(6, 64px); gap: 6px; padding: 10px;
+  background-color: #c6c6c6; border: 4px solid var(--outline);
+  box-shadow: inset 4px 4px 0 #ffffff, inset -4px -4px 0 #555555, 6px 6px 0 var(--outline);
+}
+.toolbox[hidden] { display: none; }
+.slot {
+  position: relative; width: 64px; height: 76px; padding: 6px 2px 4px;
+  display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+  font-family: var(--font); color: #1e1e22; cursor: pointer;
+  background-color: #8b8b8b; border: 0;
+  box-shadow: inset 3px 3px 0 #373737, inset -3px -3px 0 #ffffff;
+}
+.slot:hover { background-color: #a0a0a8; }
+.slot[aria-pressed="true"] { background-color: #e8d48a; box-shadow: inset 3px 3px 0 #8a6516, inset -3px -3px 0 #fff4c8; }
+.slot:focus-visible { outline: 4px solid var(--gold-hi); outline-offset: 2px; }
+.slot-icon { width: 36px; height: 36px; shape-rendering: crispEdges; }
+.slot-name { font-size: 11px; font-weight: 700; color: #1e1e22; }
+.slot-key { position: absolute; top: 2px; right: 4px; font-size: 10px; color: #1e1e22; }
+
+/* 글자 칸 + 뒤에 깔리는 밑줄 그림 */
+.ed-wrap { position: relative; flex: 1; min-height: 0; }
+.ed-wrap .page-text { position: absolute; inset: 0; margin: 0; padding: 0; overflow-y: auto; scrollbar-width: none; }
+.ed-wrap .page-text::-webkit-scrollbar { display: none; }
+.mirror { color: transparent; pointer-events: none; z-index: 0; white-space: pre-wrap; word-break: break-all; }
+.ed-wrap .editor { z-index: 1; background: transparent; }
+.editor.marking { cursor: text; caret-color: transparent; }
+.editor.marking::selection { background: rgba(255, 220, 120, 0.55); color: inherit; }
+
+mark.dye { background-color: transparent; color: inherit; padding: 0; border-radius: 0; background-repeat: no-repeat; background-position: 0 100%; }
+.mirror mark.dye { color: transparent; }
+mark.dye-red    { background-image: linear-gradient(transparent 58%, rgba(216, 69, 58, 0.42) 58%, rgba(216, 69, 58, 0.42) 88%, #d8453a 88%); }
+mark.dye-yellow { background-image: linear-gradient(transparent 58%, rgba(232, 184, 32, 0.5) 58%, rgba(232, 184, 32, 0.5) 88%, #c89a10 88%); }
+mark.dye-green  { background-image: linear-gradient(transparent 58%, rgba(63, 154, 58, 0.4) 58%, rgba(63, 154, 58, 0.4) 88%, #3f9a3a 88%); }
+mark.dye-blue   { background-image: linear-gradient(transparent 58%, rgba(47, 106, 208, 0.38) 58%, rgba(47, 106, 208, 0.38) 88%, #2f6ad0 88%); }
+
+@media (max-width: 640px) {
+  .toolbox { grid-template-columns: repeat(3, 64px); right: auto; left: 0; }
+}
