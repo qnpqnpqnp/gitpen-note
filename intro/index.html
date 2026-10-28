@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>깃펜노트 · 픽셀 필기장</title>
+<meta name="description" content="필기구 두고 온 날, 노트북에 책을 쓰자. 한 쪽 256자, 다 쓰면 서명해서 잠그는 픽셀 필기장. 설치 없이 브라우저로 바로.">
+<meta name="theme-color" content="#1b120c">
+<meta property="og:type" content="website">
+<meta property="og:title" content="깃펜노트 · 픽셀 필기장">
+<meta property="og:description" content="필기구 두고 온 날, 노트북에 책을 쓰자. 설치 없이 브라우저로 바로.">
+<meta property="og:image" content="https://qnpqnpqnp.github.io/gitpen-note/intro/img/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="../icons/icon-192.png">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+<style>
+@font-face { font-family: 'Px'; src: url('../skins/default/Galmuri11.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Px'; src: url('../skins/default/Galmuri11-Bold.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+
+:root {
+  --bg: #3a261a; --bar: #1b120c; --bar-line: #3b2a1f; --line: #000;
+  --text: #fff; --soft: #f0e2c0; --muted: #c9b99a;
+  --paper: #eee1be; --paper-hi: #faf3de; --paper-sh: #c8b48a; --ink: #24180f; --ink-soft: #5a4632; --ink-accent: #6b3a14;
+  --plank: #805430; --shelf: #140d08;
+  --btn: #6f6f78; --btn-hi: #a3a3ad; --btn-sh: #3a3a40;
+  --gold: #d8a93a; --gold-hi: #f5d27a; --gold-sh: #8a6516; --gold-text: #2a1a08;
+  --go: #3f7a34; --go-hi: #6fb55e; --go-sh: #24481e;
+}
+* { box-sizing: border-box; -webkit-font-smoothing: none; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { animation: none !important; transition: none !important; } }
+body {
+  margin: 0; font-family: 'Px', monospace; color: var(--text); background-color: var(--bg);
+  background-image: url('../skins/default/wall.png'); background-size: 64px 64px; image-rendering: pixelated;
+  line-height: 1.7; word-break: keep-all; overflow-wrap: anywhere;
+}
+img { image-rendering: auto; display: block; max-width: 100%; height: auto; }
+a { color: var(--gold-hi); }
+a:hover { color: #fff; }
+.wrap { width: 100%; max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.tx-plank { background-image: url('../skins/default/plank.png'); background-size: 64px 32px; image-rendering: pixelated; }
+.tx-paper { background-image: url('../skins/default/paper.png'); background-size: 64px 64px; image-rendering: pixelated; }
+
+/* 버튼 */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 52px; padding: 0 22px; text-decoration: none; cursor: pointer;
+  font-family: inherit; font-size: 17px; font-weight: 700; color: var(--text);
+  background-color: var(--btn); border: 4px solid var(--line);
+  box-shadow: inset 4px 4px 0 var(--btn-hi), inset -4px -4px 0 var(--btn-sh), 6px 6px 0 var(--line);
+  text-shadow: 2px 2px 0 var(--btn-sh);
+}
+.btn:hover { color: #fff; filter: brightness(1.08); }
+.btn:active { transform: translate(3px, 3px); box-shadow: inset 4px 4px 0 var(--btn-sh), inset -4px -4px 0 var(--btn-hi), 3px 3px 0 var(--line); }
+.btn.gold { background-color: var(--gold); color: var(--gold-text); text-shadow: none; box-shadow: inset 4px 4px 0 var(--gold-hi), inset -4px -4px 0 var(--gold-sh), 6px 6px 0 var(--line); }
+.btn.gold:hover { color: var(--gold-text); }
+.btn:focus-visible, a:focus-visible, button:focus-visible, summary:focus-visible { outline: 4px solid var(--gold-hi); outline-offset: 3px; }
+
+/* 상단 */
+.top { position: sticky; top: 0; z-index: 10; background-color: var(--bar); border-bottom: 4px solid var(--line); box-shadow: inset 0 -4px 0 var(--bar-line); }
+.top .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 22px; padding-top: 10px; padding-bottom: 10px; }
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; color: #fff; text-decoration: none; font-size: 24px; font-weight: 700; text-shadow: 3px 3px 0 #000; }
+.brand img { width: 36px; height: 36px; image-rendering: pixelated; border: 2px solid #000; }
+.nav { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 14px; }
+.nav a { color: var(--soft); text-decoration: none; padding: 6px 0; }
+.nav a:hover { color: #fff; text-decoration: underline; }
+.top .btn { min-height: 44px; font-size: 15px; padding: 0 16px; box-shadow: inset 4px 4px 0 var(--gold-hi), inset -4px -4px 0 var(--gold-sh); }
+
+/* 히어로 */
+.hero { padding: 64px 0 72px; }
+.hero .wrap { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 48px; align-items: center; }
+.eyebrow { display: inline-block; margin: 0 0 18px; padding: 6px 12px; font-size: 13px; font-weight: 700; color: var(--gold-text); background-color: var(--gold); border: 3px solid #000; box-shadow: inset 2px 2px 0 var(--gold-hi); }
+h1 { margin: 0 0 20px; font-size: clamp(32px, 4.2vw, 46px); line-height: 1.3; text-shadow: 4px 4px 0 #000; }
+h1 em { font-style: normal; color: var(--gold-hi); }
+.lede { margin: 0 0 30px; font-size: 17px; color: var(--soft); text-shadow: 2px 2px 0 #000; max-width: 30em; }
+.ctas { display: flex; flex-wrap: wrap; gap: 16px; }
+.note { margin: 18px 0 0; font-size: 13px; color: var(--muted); text-shadow: 2px 2px 0 #000; }
+.frame { background-color: #000; border: 4px solid #000; box-shadow: 10px 10px 0 rgba(0,0,0,0.55); }
+.frame img { width: 100%; }
+
+/* 섹션 공통 */
+section.block { padding: 64px 0; }
+.sign { display: inline-block; margin: 0 0 14px; padding: 10px 20px; background-color: var(--plank); border: 4px solid #000; font-size: clamp(22px, 3vw, 28px); font-weight: 700; text-shadow: 2px 2px 0 #3a220f; }
+.sub { margin: 0 0 32px; font-size: 16px; color: var(--soft); text-shadow: 2px 2px 0 #000; max-width: 40em; }
+
+/* 사용법 3단계 */
+.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.card {
+  position: relative; padding: 26px 24px 24px; color: var(--ink);
+  background-color: var(--paper); border: 4px solid #000;
+  box-shadow: inset 4px 4px 0 var(--paper-hi), inset -4px -4px 0 var(--paper-sh), 8px 8px 0 #000;
+}
+.card h3 { margin: 0 0 8px; font-size: 19px; color: var(--ink); }
+.card p { margin: 0; font-size: 14px; color: var(--ink-soft); }
+.num { position: absolute; top: -20px; left: 18px; display: grid; place-items: center; width: 40px; height: 40px; font-size: 18px; font-weight: 700; color: var(--gold-text); background-color: var(--gold); border: 4px solid #000; box-shadow: inset 3px 3px 0 var(--gold-hi), inset -3px -3px 0 var(--gold-sh); }
+.limit-demo { margin-top: 14px; display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--ink); }
+.gauge { flex: 1; display: flex; gap: 2px; padding: 2px; background: #000; }
+.gauge span { flex: 1; height: 10px; background: #3a3a40; box-shadow: inset 0 2px 0 #4a4a52; }
+.gauge span.on { background: var(--go); box-shadow: inset 0 2px 0 var(--go-hi); }
+.stamp { display: inline-grid; place-items: center; width: 64px; height: 64px; margin-top: 12px; font-size: 16px; font-weight: 700; color: var(--gold-text); background: var(--gold); border: 4px solid #000; box-shadow: inset 4px 4px 0 var(--gold-hi), inset -4px -4px 0 var(--gold-sh), 4px 4px 0 #000; transform: rotate(-8deg); }
+
+/* 기능 */
+.feature { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; align-items: center; margin-bottom: 56px; }
+.feature:last-child { margin-bottom: 0; }
+.feature.flip .feature-text { order: 2; }
+.feature-text h3 { margin: 0 0 12px; font-size: 24px; text-shadow: 3px 3px 0 #000; }
+.feature-text p { margin: 0 0 12px; font-size: 15px; color: var(--soft); text-shadow: 2px 2px 0 #000; }
+.tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.tags li { padding: 4px 10px; font-size: 12px; background: rgba(0,0,0,0.55); border: 2px solid var(--gold-sh); color: var(--soft); }
+.mini-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+.mini { padding: 20px; background-color: rgba(20,13,8,0.88); border: 4px solid #000; box-shadow: inset 0 0 0 2px var(--bar-line), 6px 6px 0 #000; }
+.mini h4 { margin: 0 0 6px; font-size: 16px; color: var(--gold-hi); }
+.mini p { margin: 0; font-size: 13px; color: var(--soft); }
+.mini kbd { font-family: inherit; font-size: 11px; padding: 2px 6px; background: var(--btn); border: 2px solid #000; box-shadow: inset 2px 2px 0 var(--btn-hi), inset -2px -2px 0 var(--btn-sh); color: #fff; white-space: nowrap; }
+
+/* 스킨 */
+.skin-tabs { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+.skin-tab {
+  min-height: 46px; padding: 0 16px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 700; color: #fff;
+  background: var(--sw, var(--btn)); border: 4px solid #000; box-shadow: inset 3px 3px 0 rgba(255,255,255,0.3), inset -3px -3px 0 rgba(0,0,0,0.35);
+  text-shadow: 2px 2px 0 #000;
+}
+.skin-tab[aria-selected="true"] { outline: 4px solid var(--gold-hi); outline-offset: 2px; }
+.skin-caption { margin: 14px 0 0; font-size: 14px; color: var(--soft); text-shadow: 2px 2px 0 #000; }
+
+/* 설치 */
+.install { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.install .card ol { margin: 10px 0 0; padding-left: 20px; font-size: 14px; color: var(--ink); }
+.install .card li { margin-bottom: 6px; }
+.badge { display: inline-block; margin-left: 6px; padding: 1px 6px; font-size: 11px; vertical-align: middle; color: #fff; background: var(--go); border: 2px solid #000; }
+.badge.opt { background: var(--btn-sh); }
+.url { display: inline-block; margin-top: 4px; padding: 2px 6px; font-size: 13px; background: #fffaf0; border: 2px solid var(--ink); color: var(--ink); word-break: break-all; }
+
+/* 질문 */
+.faq { display: flex; flex-direction: column; gap: 14px; max-width: 820px; }
+.faq details { background-color: var(--paper); color: var(--ink); border: 4px solid #000; box-shadow: inset -4px -4px 0 var(--paper-sh), 6px 6px 0 #000; }
+.faq summary { cursor: pointer; padding: 16px 20px; font-size: 16px; font-weight: 700; list-style: none; display: flex; justify-content: space-between; gap: 12px; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: '+'; font-size: 20px; line-height: 1; }
+.faq details[open] summary::after { content: '−'; }
+.faq p { margin: 0; padding: 0 20px 18px; font-size: 14px; color: var(--ink-soft); }
+
+/* 마무리 */
+.final { text-align: center; padding: 72px 0 80px; }
+.final h2 { margin: 0 0 14px; font-size: clamp(26px, 4vw, 38px); text-shadow: 4px 4px 0 #000; }
+.final p { margin: 0 0 28px; color: var(--soft); text-shadow: 2px 2px 0 #000; }
+footer { background-color: var(--bar); border-top: 4px solid #000; padding: 22px 0; font-size: 12px; color: var(--muted); }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; }
+footer a { color: var(--soft); }
+
+@media (max-width: 900px) {
+  .hero .wrap, .feature { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .feature.flip .feature-text { order: 0; }
+  .steps, .install, .mini-grid { grid-template-columns: minmax(0, 1fr); gap: 30px; }
+  .hero { padding: 40px 0 48px; }
+  section.block { padding: 48px 0; }
+}
+@media (max-width: 560px) {
+  .wrap { padding: 0 16px; }
+  .nav { display: none; }
+  .btn { width: 100%; }
+  .top .btn { width: auto; }
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#">
+      <img src="../icons/icon-192.png" alt="" width="36" height="36">
+      깃펜노트
+    </a>
+    <nav class="nav" aria-label="소개 메뉴">
+      <a href="#how">사용법</a>
+      <a href="#features">기능</a>
+      <a href="#skins">스킨</a>
+      <a href="#install">설치</a>
+      <a href="#faq">질문</a>
+    </nav>
+    <a class="btn gold" href="../">바로 써보기</a>
+  </div>
+</header>
+
+<main>
+  <!-- 첫 화면 -->
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow">설치 없음 · 무료 · 광고 없음</p>
+        <h1>필기구 두고 온 날,<br><em>노트북에 책을 쓰자</em></h1>
+        <p class="lede">과목마다 책 한 권. 한 쪽은 256자까지라 길게 못 써서 핵심만 남아. 다 정리한 책은 서명해서 잠그면 끝.</p>
+        <div class="ctas">
+          <a class="btn gold" href="../">바로 써보기</a>
+          <a class="btn" href="#install">아이패드에 설치</a>
+        </div>
+        <p class="note">브라우저로 열자마자 써져. 가입 안 해도 돼.</p>
+      </div>
+      <div class="frame">
+        <img src="img/hero.webp" width="1280" height="880" alt="깃펜노트 필기 화면. 펼친 책 양쪽에 한국사 필기가 있고, 아래에 글자 수 게이지가 40/256으로 표시돼 있다.">
+      </div>
+    </div>
+  </section>
+
+  <!-- 사용법 -->
+  <section class="block" id="how">
+    <div class="wrap">
+      <h2 class="sign tx-plank">이렇게 써</h2>
+      <p class="sub">공책 대신 책장. 과목이 늘수록 책장이 채워져.</p>
+      <ol class="steps">
+        <li class="card tx-paper">
+          <span class="num" aria-hidden="true">1</span>
+          <h3>과목마다 책 만들기</h3>
+          <p>N 키 한 번이면 새 책. 이름이랑 표지 색만 고르면 책장에 꽂혀.</p>
+        </li>
+        <li class="card tx-paper">
+          <span class="num" aria-hidden="true">2</span>
+          <h3>한 쪽 256자로 핵심만</h3>
+          <p>칸이 정해져 있어서 요약 실력이 늘어. 넘치면 Ctrl + Enter로 다음 쪽.</p>
+          <div class="limit-demo" aria-hidden="true">
+            <div class="gauge"><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+            <span>108 / 256</span>
+          </div>
+        </li>
+        <li class="card tx-paper">
+          <span class="num" aria-hidden="true">3</span>
+          <h3>다 쓰면 서명해서 잠그기</h3>
+          <p>단원이 끝나면 쾅. 금딱지가 붙고 더는 못 고쳐. 진짜 끝냈다는 기분.</p>
+          <span class="stamp" aria-hidden="true">서명</span>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- 기능 -->
+  <section class="block" id="features">
+    <div class="wrap">
+      <h2 class="sign tx-plank">공부가 게임처럼</h2>
+      <p class="sub">쓸수록 잉크가 차고, 레벨이 오르고, 업적이 열려.</p>
+
+      <div class="feature">
+        <div class="feature-text">
+          <h3>잉크 경험치와 업적 22개</h3>
+          <p>새로 쓴 글자 하나에 잉크 1. 새 쪽, 새 책, 서명마다 보너스. 지웠다 다시 쓰는 꼼수는 안 쳐줘.</p>
+          <p>3일·7일·30일 연속 필기, 하루 2,000자 벼락치기, 서명한 책 10권 같은 업적이 있고, 조건이 비밀인 숨은 업적도 있어.</p>
+          <ul class="tags"><li>레벨 업</li><li>연속 필기 기록</li><li>숨은 업적 3개</li></ul>
+        </div>
+        <div class="frame"><img src="img/achv.webp" width="1280" height="880" alt="필기 중 오른쪽 위에 '업적 달성! 첫 획' 알림이 뜬 화면" loading="lazy"></div>
+      </div>
+
+      <div class="feature flip">
+        <div class="feature-text">
+          <h3>서명하면 도장이 쾅</h3>
+          <p>서명한 책은 읽기 전용으로 잠기고, 책장에서도 금딱지가 붙어. 시험 전에 서명한 책만 쭉 넘겨보면 그게 요약 노트야.</p>
+          <ul class="tags"><li>수정 잠금</li><li>책장에 금딱지</li></ul>
+        </div>
+        <div class="frame"><img src="img/signed.webp" width="1280" height="880" alt="서명된 영어 단어 책. 오른쪽 아래에 금색 '서명' 도장이 찍혀 있다." loading="lazy"></div>
+      </div>
+
+      <div class="mini-grid">
+        <div class="mini">
+          <h4>진짜 물건 소리</h4>
+          <p>종이 넘기는 소리, 펜촉 사각사각, 나무 도장 쿵. 전부 끌 수 있어 (<kbd>M</kbd>).</p>
+        </div>
+        <div class="mini">
+          <h4>키보드만으로 다 돼</h4>
+          <p><kbd>N</kbd> 새 책 · <kbd>Alt ←→</kbd> 쪽 넘기기 · <kbd>Ctrl S</kbd> 서명. 마우스 없이 수업 따라가기.</p>
+        </div>
+        <div class="mini">
+          <h4>인터넷 없어도 열려</h4>
+          <p>한 번 열어두면 와이파이가 끊겨도 써져. 필기는 내 기기에 저장돼.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 스킨 -->
+  <section class="block" id="skins">
+    <div class="wrap">
+      <h2 class="sign tx-plank">스킨 5종</h2>
+      <p class="sub">기분 따라 책장 분위기를 바꿔. 노트북이랑 아이패드에 다른 스킨을 입혀도 돼.</p>
+      <div class="skin-tabs" role="tablist" aria-label="스킨 고르기">
+        <button class="skin-tab" role="tab" aria-selected="true" aria-controls="skin-view" data-skin="default" style="--sw:#805430">나무 서재</button>
+        <button class="skin-tab" role="tab" aria-selected="false" aria-controls="skin-view" data-skin="night-library" style="--sw:#262a5c">밤 도서관</button>
+        <button class="skin-tab" role="tab" aria-selected="false" aria-controls="skin-view" data-skin="sakura" style="--sw:#964a5c">벚꽃</button>
+        <button class="skin-tab" role="tab" aria-selected="false" aria-controls="skin-view" data-skin="stone-cave" style="--sw:#56565e">돌 동굴</button>
+        <button class="skin-tab" role="tab" aria-selected="false" aria-controls="skin-view" data-skin="snow-cabin" style="--sw:#346096">눈 오는 오두막</button>
+      </div>
+      <div class="frame" id="skin-view" role="tabpanel">
+        <img id="skin-img" src="img/skin-default.webp" width="1280" height="880" alt="나무 서재 스킨의 책장 화면" loading="lazy">
+      </div>
+      <p class="skin-caption" id="skin-caption">나무 서재: 따뜻한 갈색 판자 벽. 기본 스킨.</p>
+    </div>
+  </section>
+
+  <!-- 설치 -->
+  <section class="block" id="install">
+    <div class="wrap">
+      <h2 class="sign tx-plank">설치하는 법</h2>
+      <p class="sub">사실 설치랄 것도 없어. 주소만 기억하면 돼.</p>
+      <div class="install">
+        <div class="card tx-paper">
+          <h3>노트북 <span class="badge">1분</span></h3>
+          <ol>
+            <li>크롬이나 엣지로 아래 주소 열기<br><a class="url app-url" href="../">깃펜노트 열기</a></li>
+            <li><b>Ctrl + D</b>로 북마크</li>
+            <li>끝. 다음부턴 북마크 클릭</li>
+          </ol>
+        </div>
+        <div class="card tx-paper">
+          <h3>아이패드 <span class="badge">1분</span></h3>
+          <ol>
+            <li><b>사파리</b>로 같은 주소 열기<br><span class="url app-url">깃펜노트 주소</span></li>
+            <li>위쪽 <b>공유 버튼</b> 누르기</li>
+            <li><b>홈 화면에 추가</b></li>
+            <li>홈 화면 아이콘으로 열면 앱처럼 떠. 블루투스 키보드 추천</li>
+          </ol>
+        </div>
+        <div class="card tx-paper">
+          <h3>기기 동기화 <span class="badge opt">선택</span></h3>
+          <ol>
+            <li>노트북이랑 아이패드 필기를 맞추고 싶을 때만</li>
+            <li>GitHub 계정이 필요해</li>
+            <li>앱의 <b>설정 → 기기 동기화</b>에 안내가 다 있어</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 질문 -->
+  <section class="block" id="faq">
+    <div class="wrap">
+      <h2 class="sign tx-plank">자주 묻는 질문</h2>
+      <div class="faq">
+        <details>
+          <summary>진짜 무료야?</summary>
+          <p>응. 가입도, 결제도, 광고도 없어.</p>
+        </details>
+        <details>
+          <summary>내 필기는 어디에 저장돼? 남이 볼 수 있어?</summary>
+          <p>쓰는 기기의 브라우저 안에만 저장돼. 어디로도 보내지 않아서 다른 사람은 못 봐. 동기화를 켜면 내 GitHub 계정의 비공개 저장소에만 올라가.</p>
+        </details>
+        <details>
+          <summary>필기가 날아갈 수도 있어?</summary>
+          <p>브라우저 방문 기록과 데이터를 지우면 같이 지워져. 가끔 <b>설정 → 백업 파일로 저장</b>을 눌러두면 안전해. 동기화를 켜두면 자동으로 백업되는 셈이고.</p>
+        </details>
+        <details>
+          <summary>256자는 너무 적지 않아?</summary>
+          <p>그게 포인트야. 길게 못 쓰니까 핵심만 고르게 돼. 그래도 답답하면 위쪽 <b>글자 제한</b> 버튼으로 끌 수 있어.</p>
+        </details>
+        <details>
+          <summary>폰에서도 돼?</summary>
+          <p>열리긴 하는데, 타자가 많은 앱이라 노트북이나 키보드 연결한 태블릿이 훨씬 편해.</p>
+        </details>
+        <details>
+          <summary>손글씨(애플펜슬)도 돼?</summary>
+          <p>지금은 키보드 타자만 돼.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="final">
+    <div class="wrap">
+      <h2>다음 수업, 책 한 권 시작해볼래?</h2>
+      <p>N 누르고, 과목 이름 쓰고, 바로 필기.</p>
+      <a class="btn gold" href="../">바로 써보기</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>깃펜노트 · 픽셀 필기장</span>
+    <span>글꼴: <a href="https://github.com/quiple/galmuri" rel="noopener">갈무리 (Galmuri)</a>, SIL Open Font License 1.1</span>
+  </div>
+</footer>
+
+<script>
+  // 스킨 탭: 버튼 누르면 미리보기 그림과 설명만 바꿈
+  (function () {
+    var CAPTION = {
+      'default': '나무 서재: 따뜻한 갈색 판자 벽. 기본 스킨.',
+      'night-library': '밤 도서관: 남색 벽에 어두운 종이. 밤에 눈이 편해.',
+      'sakura': '벚꽃: 분홍 판자 벽에 꽃잎이 흩날린 종이.',
+      'stone-cave': '돌 동굴: 이끼 낀 회색 벽돌, 횃불 주황 포인트.',
+      'snow-cabin': '눈 오는 오두막: 하얀 벽, 파란 표지, 차가운 종이.'
+    };
+    var tabs = Array.prototype.slice.call(document.querySelectorAll('.skin-tab'));
+    var img = document.getElementById('skin-img');
+    var cap = document.getElementById('skin-caption');
+    function pick(tab) {
+      var s = tab.getAttribute('data-skin');
+      tabs.forEach(function (t) { t.setAttribute('aria-selected', String(t === tab)); t.tabIndex = t === tab ? 0 : -1; });
+      img.src = 'img/skin-' + s + '.webp';
+      img.alt = tab.textContent + ' 스킨의 책장 화면';
+      cap.textContent = CAPTION[s];
+    }
+    tabs.forEach(function (t, i) {
+      t.tabIndex = i === 0 ? 0 : -1;
+      t.addEventListener('click', function () { pick(t); });
+      t.addEventListener('keydown', function (e) {
+        if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+        var n = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+        n.focus(); pick(n); e.preventDefault();
+      });
+    });
+    // 앱 주소를 지금 사이트 기준으로 표시 (주소를 옮겨도 자동으로 맞춰짐)
+    var appUrl = new URL('../', location.href).href.replace(/^https?:\/\//, '');
+    document.querySelectorAll('.app-url').forEach(function (el) { el.textContent = appUrl; });
+    // 미리 받아두기
+    Object.keys(CAPTION).forEach(function (s) { var p = new Image(); p.src = 'img/skin-' + s + '.webp'; });
+  })();
+</script>
+</body>
+</html>
