@@ -41,15 +41,16 @@
     { id: 'speed',       title: '속필',         desc: '1분 안에 200자를 직접 쳤다', hidden: true },
     { id: 'silent',      title: '침묵의 필경사', desc: '소리를 끈 채로 한 쪽을 꽉 채웠다', hidden: true },
     { id: 'explorer',    title: '탐험가',       desc: '모든 스킨을 한 번씩 입어봤다', hidden: true },
-    { id: 'first_mark',  title: '밑줄 쫙',      desc: '처음으로 잉크병으로 밑줄을 그었다' }
+    { id: 'first_mark',  title: '밑줄 쫙',      desc: '처음으로 염료로 밑줄을 그었다' }
   ];
 
   // 밑줄 잉크 색 (저장 데이터를 읽을 때 쓰므로 load()보다 먼저)
   var DYES = [
-    { id: 'red',    name: '다홍',   key: '1', ink: '#d8453a', hi: '#ff7a6a' },
-    { id: 'yellow', name: '개나리', key: '2', ink: '#e8b820', hi: '#ffe070' },
-    { id: 'green',  name: '풀잎',   key: '3', ink: '#3f9a3a', hi: '#7ad06a' },
-    { id: 'blue',   name: '바다',   key: '4', ink: '#2f6ad0', hi: '#6aa0ff' }
+    // name: 고르면 뜨는 이름, src: 도구함 칸에 쓰인 재료 이름
+    { id: 'red',    name: '빨간색 염료', src: '양귀비', key: '1', ink: '#d8453a', hi: '#ff7a6a' },
+    { id: 'yellow', name: '노란색 염료', src: '민들레', key: '2', ink: '#e8b820', hi: '#ffe070' },
+    { id: 'green',  name: '녹색 염료',   src: '선인장', key: '3', ink: '#3f9a3a', hi: '#7ad06a' },
+    { id: 'blue',   name: '파란색 염료', src: '청금석', key: '4', ink: '#2f6ad0', hi: '#6aa0ff' }
   ];
   var DYE_IDS = DYES.map(function (d) { return d.id; });
 
@@ -884,7 +885,7 @@
     var label;
     if (tool === 'pen') label = b && b.signed ? '서명됨 · 읽기 전용' : '쓰는 중';
     else if (tool === 'erase') label = '지우개 · 밑줄을 드래그해서 지우기';
-    else label = dyeOf(tool).name + ' 잉크 · 글자를 드래그해서 밑줄';
+    else label = dyeOf(tool).name + ' · 글자를 드래그해서 밑줄';
     $('right-state').textContent = label;
     $('btn-tools').textContent = '';
     $('btn-tools').appendChild(toolIcon(tool, 'tool-icon'));
@@ -895,11 +896,22 @@
     });
   }
 
-  function toolName(t) { return t === 'pen' ? '깃펜' : t === 'erase' ? '지우개' : dyeOf(t).name + ' 잉크병'; }
+  function toolName(t) { return t === 'pen' ? '깃펜' : t === 'erase' ? '지우개' : dyeOf(t).name; }
+  function slotName(t) { return t === 'pen' || t === 'erase' ? toolName(t) : dyeOf(t).src; }
 
   // 도트 아이콘 (직접 그린 것)
   var ICON_QUILL = ['........ww', '.......wwk', '......wwgk', '.....wwgk.', '....wyyk..', '...wyyk...', '...wwk....', '..bbk.....', '.bbk......', 'bk........'];
-  var ICON_BOTTLE = ['...kkkk...', '...kccK...', '....kk....', '...kwwk...', '..kwLLLk..', '.kLLLLLLk.', '.kLhLLLLk.', '.kLhLLLLk.', '.kLLLLLDk.', '..kkkkkk..'];
+  // 염료 재료 아이콘 (직접 그림): 양귀비, 민들레, 선인장, 청금석
+  var ICON_DYE = {
+    red:    { rows: ['..........', '..kk..kk..', '.kRRkkRRk.', '.kRrRRrRk.', '.kRRddRRk.', '..kRddRk..', '...kRRk...', '....gk....', '...gg.g...', '....g.....'],
+              pal: { k: '#5a1010', R: '#d8453a', r: '#ff7a6a', d: '#2a1a1a', g: '#3f9a3a' } },
+    yellow: { rows: ['..y..y..y.', '...yYYYy..', '.yYYYwYYy.', '..YYoooYY.', '.yYYoooYYy', '..YYYYYYy.', '.y.yYYy.y.', '.....g....', '...g.g.g..', '....ggg...'],
+              pal: { y: '#c89a10', Y: '#f2c830', w: '#fff0a0', o: '#e89a20', g: '#3f9a3a' } },
+    green:  { rows: ['....kk....', '...kGgk...', '.k.kGgk...', 'kGkkGgk.k.', 'kGGGGgkkGk', '.kkkGgGGk.', '...kGgkk..', '...kGgk...', '..bbbbbb..', '..bBBBBb..'],
+              pal: { k: '#1e4a1a', G: '#4a9a3a', g: '#7ad06a', b: '#5a3a1c', B: '#8a5a2b' } },
+    blue:   { rows: ['..........', '...kkkk...', '..kLHHLk..', '.kLHwHLLk.', '.kLHHLLLk.', '.kLLLLLDk.', '..kLLLDk..', '...kLDk...', '....kk....', '..........'],
+              pal: { k: '#0e1e4a', L: '#2f6ad0', H: '#6aa0ff', w: '#e0ecff', D: '#1c3a80' } }
+  };
   var ICON_ERASER = ['..........', '..........', '....kkkkkk', '...kwwwwpk', '..kwwwwppk', '.kkkkkkppk', '.kppppkpk.', '.kppppkk..', '.kkkkkk...', '..........'];
   var ICON_BOX = ['...kkkk...', '...k..k...', 'kkkkkkkkkk', 'kbbbbbbbbk', 'kBBBmmBBBk', 'kbbbmmbbbk', 'kbbbbbbbbk', 'kBBBBBBBBk', 'kbbbbbbbbk', 'kkkkkkkkkk'];
 
@@ -907,8 +919,8 @@
     if (t === 'pen') return pixelIcon(ICON_QUILL, { k: '#000000', w: '#ffffff', g: '#c8c8d4', y: '#d8a93a', b: '#7a4e2c' }, cls);
     if (t === 'erase') return pixelIcon(ICON_ERASER, { k: '#000000', w: '#ffffff', p: '#e88aa0' }, cls);
     if (t === 'box') return pixelIcon(ICON_BOX, { k: '#000000', b: '#9a6a3a', B: '#7a4e2a', m: '#c8c8d4' }, cls);
-    var d = dyeOf(t);
-    return pixelIcon(ICON_BOTTLE, { k: '#000000', c: '#b08050', K: '#000000', w: '#e8eef4', L: d.ink, h: d.hi, D: '#00000055' }, cls);
+    var ic = ICON_DYE[t];
+    return pixelIcon(ic.rows, ic.pal, cls);
   }
 
   function setTool(t, silent) {
@@ -928,9 +940,10 @@
     box.textContent = '';
     var list = [{ t: 'pen', key: 'Q' }].concat(DYES.map(function (d) { return { t: d.id, key: d.key }; }), [{ t: 'erase', key: '0' }]);
     list.forEach(function (it) {
-      var b = el('button', { type: 'button', class: 'slot', 'data-tool': it.t, 'aria-pressed': 'false', title: toolName(it.t) + ' (Alt+' + it.key + ')' }, [
+      var tip = it.t === 'pen' || it.t === 'erase' ? toolName(it.t) : slotName(it.t) + ' → ' + toolName(it.t);
+      var b = el('button', { type: 'button', class: 'slot', 'data-tool': it.t, 'aria-pressed': 'false', 'aria-label': tip, title: tip + ' (Alt+' + it.key + ')' }, [
         toolIcon(it.t, 'slot-icon'),
-        el('span', { class: 'slot-name', text: toolName(it.t).replace(' 잉크병', '') }),
+        el('span', { class: 'slot-name', text: slotName(it.t) }),
         el('span', { class: 'slot-key', text: it.key })
       ]);
       b.addEventListener('click', function () { setTool(it.t); });
